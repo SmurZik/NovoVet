@@ -44,7 +44,31 @@ fun buildOutpatientCard(
     age: String,
     onAgeChange: (String) -> Unit,
     save: Boolean,
-    onSaveChange: (Boolean) -> Unit
+    onSaveChange: (Boolean) -> Unit,
+    ownerWords: String,
+    onOwnerWordsChange: (String) -> Unit,
+    commonFeeling: String,
+    onCommonFeelingChange: (String) -> Unit,
+    temperature: String,
+    onTemperatureChange: (String) -> Unit,
+    appetite: String,
+    onAppetiteChange: (String) -> Unit,
+    vomit: String,
+    onVomitChange: (String) -> Unit,
+    defication: String,
+    onDeficationChange: (String) -> Unit,
+    urination: String,
+    onUrinationChange: (String) -> Unit,
+    extra: String,
+    onExtraChange: (String) -> Unit,
+    diagnosis: String,
+    onDiagnosisChange: (String) -> Unit,
+    completed: String,
+    onCompletedChange: (String) -> Unit,
+    recommendations: String,
+    onRecommendationsChange: (String) -> Unit,
+    date: String,
+    onDateChange: (String) -> Unit
 ) {
     var secondName by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
@@ -54,11 +78,9 @@ fun buildOutpatientCard(
     val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес")
 
 
-
     var firstNote by remember { mutableStateOf(false) }
 
     val labels2 = listOf("Кличка", "Вид", "Порода", "Пол", "Возраст")
-
 
 
 //    CoroutineScope(Dispatchers.Default).launch {
@@ -279,12 +301,66 @@ fun buildOutpatientCard(
                 Text(if (!save) "Редактировать" else "Сохранить")
             }
         }
-        buildVisitNote(visit, dates, onVisitChange = { visit = it })
+        buildVisitNote(
+            visit,
+            dates,
+            onVisitChange = { visit = it },
+            ownerWords,
+            onOwnerWordsChange,
+            commonFeeling,
+            onCommonFeelingChange,
+            temperature,
+            onTemperatureChange,
+            appetite,
+            onAppetiteChange,
+            vomit,
+            onVomitChange,
+            defication,
+            onDeficationChange,
+            urination,
+            onUrinationChange,
+            extra,
+            onExtraChange,
+            diagnosis,
+            onDiagnosisChange,
+            completed,
+            onCompletedChange,
+            recommendations,
+            onRecommendationsChange,
+            date,
+            onDateChange
+        )
     }
 }
 
 @Composable
-fun buildVisitNote(visit: List<String>, dates: List<String>, onVisitChange: (List<String>) -> Unit) {
+fun buildVisitNote(
+    visit: List<String>, dates: List<String>, onVisitChange: (List<String>) -> Unit,
+    ownerWords: String,
+    onOwnerWordsChange: (String) -> Unit,
+    commonFeeling: String,
+    onCommonFeelingChange: (String) -> Unit,
+    temperature: String,
+    onTemperatureChange: (String) -> Unit,
+    appetite: String,
+    onAppetiteChange: (String) -> Unit,
+    vomit: String,
+    onVomitChange: (String) -> Unit,
+    defication: String,
+    onDeficationChange: (String) -> Unit,
+    urination: String,
+    onUrinationChange: (String) -> Unit,
+    extra: String,
+    onExtraChange: (String) -> Unit,
+    diagnosis: String,
+    onDiagnosisChange: (String) -> Unit,
+    completed: String,
+    onCompletedChange: (String) -> Unit,
+    recommendations: String,
+    onRecommendationsChange: (String) -> Unit,
+    date: String,
+    onDateChange: (String) -> Unit
+) {
     var isPattern by remember { mutableStateOf(false) }
     var isEdit by remember { mutableStateOf(false) }
     val dateNow = Date()
@@ -373,7 +449,7 @@ fun buildVisitNote(visit: List<String>, dates: List<String>, onVisitChange: (Lis
                     modifier = Modifier
                         .background(color = Color.Cyan)
                 ) {
-                    for (i in dates.size - 1 downTo  0 step 2) {
+                    for (i in dates.size - 1 downTo 0 step 2) {
                         DropdownMenuItem(
                             onClick = {
                                 onVisitChange(DataImpl().getInfoByPetId(0).first.second)
@@ -417,7 +493,35 @@ fun buildVisitNote(visit: List<String>, dates: List<String>, onVisitChange: (Lis
                 )
             }
         }
-        buildExamination(isPattern, visit, isEdit, onPatternChange = { isPattern = it })
+        buildExamination(isPattern,
+            visit,
+            isEdit,
+            onPatternChange = { isPattern = it },
+            ownerWords,
+            onOwnerWordsChange,
+            commonFeeling,
+            onCommonFeelingChange,
+            temperature,
+            onTemperatureChange,
+            appetite,
+            onAppetiteChange,
+            vomit,
+            onVomitChange,
+            defication,
+            onDeficationChange,
+            urination,
+            onUrinationChange,
+            extra,
+            onExtraChange,
+            diagnosis,
+            onDiagnosisChange,
+            completed,
+            onCompletedChange,
+            recommendations,
+            onRecommendationsChange,
+            date,
+            onDateChange
+            )
     }
 }
 
@@ -426,7 +530,31 @@ fun buildExamination(
     isPattern: Boolean,
     visit: List<String>,
     isEdit: Boolean,
-    onPatternChange: (Boolean) -> Unit
+    onPatternChange: (Boolean) -> Unit,
+    ownerWords: String,
+    onOwnerWordsChange: (String) -> Unit,
+    commonFeeling: String,
+    onCommonFeelingChange: (String) -> Unit,
+    temperature: String,
+    onTemperatureChange: (String) -> Unit,
+    appetite: String,
+    onAppetiteChange: (String) -> Unit,
+    vomit: String,
+    onVomitChange: (String) -> Unit,
+    defication: String,
+    onDeficationChange: (String) -> Unit,
+    urination: String,
+    onUrinationChange: (String) -> Unit,
+    extra: String,
+    onExtraChange: (String) -> Unit,
+    diagnosis: String,
+    onDiagnosisChange: (String) -> Unit,
+    completed: String,
+    onCompletedChange: (String) -> Unit,
+    recommendations: String,
+    onRecommendationsChange: (String) -> Unit,
+    date: String,
+    onDateChange: (String) -> Unit
 ) {
     val labels = listOf(
         "Со слов владельца: ",
@@ -444,38 +572,24 @@ fun buildExamination(
         "Рекомендации: "
     )
 
-    val ownerWords = remember { mutableStateOf("") }
-    val commonFeeling = remember { mutableStateOf("") }
-    val temperature = remember { mutableStateOf("") }
-    val appetite = remember { mutableStateOf("") }
-    val vomit = remember { mutableStateOf("") }
-    val defication = remember { mutableStateOf("") }
-    val urination = remember { mutableStateOf("") }
-    val extra = remember { mutableStateOf("") }
-
-    val diagnosis = remember { mutableStateOf("") }
-    val completed = remember { mutableStateOf("") }
-    val recommendations = remember { mutableStateOf("") }
-
-    val date = remember { mutableStateOf("") }
 
     var next by remember { mutableStateOf(false) }
 
     if (visit.isNotEmpty()) {
-        ownerWords.value = visit[2]
-        commonFeeling.value = visit[11]
-        temperature.value = visit[3]
-        appetite.value = visit[4]
-        vomit.value = visit[5]
-        defication.value = visit[6]
-        urination.value = visit[7]
-        extra.value = visit[8]
+        onOwnerWordsChange(visit[2])
+        onCommonFeelingChange(visit[11])
+        onTemperatureChange(visit[3])
+        onAppetiteChange(visit[4])
+        onVomitChange(visit[5])
+        onDeficationChange(visit[6])
+        onUrinationChange(visit[7])
+        onExtraChange(visit[8])
 
-        diagnosis.value = visit[1]
-        completed.value = visit[9]
-        recommendations.value = visit[10]
+        onDiagnosisChange(visit[1])
+        onCompletedChange(visit[9])
+        onRecommendationsChange(visit[10])
 
-        date.value = visit[11] + visit[12]
+        onDateChange(visit[11] + visit[12])
     }
     Box(
         modifier = Modifier
@@ -541,18 +655,18 @@ fun buildExamination(
         } else {
 
             if (!isEdit) {
-                ownerWords.value = ""
-                commonFeeling.value = ""
-                temperature.value = ""
-                appetite.value = ""
-                vomit.value = ""
-                defication.value = ""
-                urination.value = ""
-                extra.value = ""
+                onOwnerWordsChange("")
+                onCommonFeelingChange("")
+                onTemperatureChange("")
+                onAppetiteChange("")
+                onVomitChange("")
+                onDeficationChange("")
+                onUrinationChange("")
+                onExtraChange("")
 
-                diagnosis.value = ""
-                completed.value = ""
-                recommendations.value = ""
+                onDiagnosisChange("")
+                onCompletedChange("")
+                onRecommendationsChange("")
             }
 
             Row(
@@ -612,7 +726,8 @@ fun buildExamination(
                 ) {
 
                     items(8) { count ->
-                        val currentData = when (count) {
+                        var currentData by remember { mutableStateOf("") }
+                        currentData = when (count) {
                             0 -> ownerWords
                             1 -> commonFeeling
                             2 -> temperature
@@ -622,24 +737,25 @@ fun buildExamination(
                             6 -> urination
                             else -> extra
                         }
-                        buildOneNote(currentData.value, onTextChange = { currentData.value = it }, labels[count], count)
+                        buildOneNote(currentData, onTextChange = { currentData = it }, labels[count], count)
                     }
                     items(3) { count ->
-                        val currentData = when (count) {
+                        var currentData by remember { mutableStateOf("") }
+                        currentData = when (count) {
                             0 -> diagnosis
                             1 -> completed
                             else -> recommendations
                         }
                         buildBiggerNote(
-                            currentData.value,
-                            onTextChange = { currentData.value = it },
+                            currentData,
+                            onTextChange = { currentData = it },
                             labelsBigger[count],
                             next
                         )
                     }
                 }
             } else {
-                buildBiggerNote(completed.value, onTextChange = { completed.value = it }, "Выполнено в клинике: ", next)
+                buildBiggerNote(completed, onTextChange = { onCompletedChange(it) }, "Выполнено в клинике: ", next)
             }
         }
     }

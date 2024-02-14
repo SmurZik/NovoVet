@@ -37,6 +37,21 @@ fun app() {
     var age by remember { mutableStateOf("") }
     var save by remember { mutableStateOf(false) }
 
+    var ownerWords by remember { mutableStateOf("") }
+    var commonFeeling by remember { mutableStateOf("") }
+    var temperature by remember { mutableStateOf("") }
+    var appetite by remember { mutableStateOf("") }
+    var vomit by remember { mutableStateOf("") }
+    var defication by remember { mutableStateOf("") }
+    var urination by remember { mutableStateOf("") }
+    var extra by remember { mutableStateOf("") }
+
+    var diagnosis by remember { mutableStateOf("") }
+    var completed by remember { mutableStateOf("") }
+    var recommendations by remember { mutableStateOf("") }
+
+    var date by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier.fillMaxHeight().width(300.dp).background(color = Color.LightGray)
     ) {
@@ -204,7 +219,31 @@ fun app() {
             age = age,
             onAgeChange = { age = it },
             save = save,
-            onSaveChange = { save = it }
+            onSaveChange = { save = it },
+            ownerWords = ownerWords,
+            onOwnerWordsChange = { ownerWords = it },
+            commonFeeling = commonFeeling,
+            onCommonFeelingChange = { commonFeeling = it },
+            temperature = temperature,
+            onTemperatureChange = { temperature = it },
+            appetite = appetite,
+            onAppetiteChange = { appetite = it },
+            vomit = vomit,
+            onVomitChange = { vomit = it },
+            defication = defication,
+            onDeficationChange = { defication = it },
+            urination = urination,
+            onUrinationChange = { urination = it },
+            extra = extra,
+            onExtraChange = { extra = it },
+            diagnosis = diagnosis,
+            onDiagnosisChange = { diagnosis = it },
+            completed = completed,
+            onCompletedChange = { completed = it },
+            recommendations = recommendations,
+            onRecommendationsChange = { recommendations = it },
+            date = date,
+            onDateChange = { date = it }
         )
     }
 }
