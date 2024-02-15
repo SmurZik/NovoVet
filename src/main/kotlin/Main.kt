@@ -52,6 +52,9 @@ fun app() {
 
     var date by remember { mutableStateOf("") }
 
+    var isPattern by remember { mutableStateOf(false) }
+    var isEdit by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxHeight().width(300.dp).background(color = Color.LightGray)
     ) {
@@ -243,7 +246,11 @@ fun app() {
             recommendations = recommendations,
             onRecommendationsChange = { recommendations = it },
             date = date,
-            onDateChange = { date = it }
+            onDateChange = { date = it },
+            isPattern = isPattern,
+            onIsPatternChange = { isPattern = it },
+            isEdit = isEdit,
+            onIsEditChange = { isEdit = it }
         )
     }
 }

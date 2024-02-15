@@ -68,7 +68,11 @@ fun buildOutpatientCard(
     recommendations: String,
     onRecommendationsChange: (String) -> Unit,
     date: String,
-    onDateChange: (String) -> Unit
+    onDateChange: (String) -> Unit,
+    isPattern: Boolean,
+    onIsPatternChange: (Boolean) -> Unit,
+    isEdit: Boolean,
+    onIsEditChange: (Boolean) -> Unit
 ) {
     var secondName by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
@@ -328,7 +332,11 @@ fun buildOutpatientCard(
             recommendations,
             onRecommendationsChange,
             date,
-            onDateChange
+            onDateChange,
+            isPattern,
+            onIsPatternChange,
+            isEdit,
+            onIsEditChange
         )
     }
 }
@@ -359,10 +367,13 @@ fun buildVisitNote(
     recommendations: String,
     onRecommendationsChange: (String) -> Unit,
     date: String,
-    onDateChange: (String) -> Unit
+    onDateChange: (String) -> Unit,
+    isPattern: Boolean,
+    onIsPatternChange: (Boolean) -> Unit,
+    isEdit: Boolean,
+    onIsEditChange: (Boolean) -> Unit
 ) {
-    var isPattern by remember { mutableStateOf(false) }
-    var isEdit by remember { mutableStateOf(false) }
+
     val dateNow = Date()
     val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
     val date =
@@ -382,8 +393,8 @@ fun buildVisitNote(
         ) {
             IconButton(
                 onClick = {
-                    isPattern = true
-                    isEdit = true
+                    onIsPatternChange(true)
+                    onIsEditChange(true)
                 },
                 modifier = Modifier.padding(top = 14.dp, start = 16.dp).size(20.dp, 20.dp)
             ) {
@@ -395,8 +406,8 @@ fun buildVisitNote(
 
             IconButton(
                 onClick = {
-                    isPattern = true
-                    isEdit = false
+                    onIsPatternChange(true)
+                    onIsEditChange(false)
                 },
                 modifier = Modifier.padding(start = 0.dp, bottom = 8.dp, top = 8.dp, end = 16.dp)
             ) {
@@ -493,10 +504,11 @@ fun buildVisitNote(
                 )
             }
         }
-        buildExamination(isPattern,
+        buildExamination(
+            isPattern,
             visit,
             isEdit,
-            onPatternChange = { isPattern = it },
+            onIsPatternChange,
             ownerWords,
             onOwnerWordsChange,
             commonFeeling,
@@ -521,7 +533,7 @@ fun buildVisitNote(
             onRecommendationsChange,
             date,
             onDateChange
-            )
+        )
     }
 }
 
@@ -575,17 +587,17 @@ fun buildExamination(
 
     var next by remember { mutableStateOf(false) }
 
-    if (visit.isNotEmpty()) {
-        onOwnerWordsChange(visit[2])
-        onCommonFeelingChange(visit[11])
-        onTemperatureChange(visit[3])
-        onAppetiteChange(visit[4])
-        onVomitChange(visit[5])
-        onDeficationChange(visit[6])
-        onUrinationChange(visit[7])
-        onExtraChange(visit[8])
+    if (visit.isNotEmpty() && !isEdit) {
+        onOwnerWordsChange(visit[0])
+        onCommonFeelingChange(visit[1])
+        onTemperatureChange(visit[2])
+        onAppetiteChange(visit[3])
+        onVomitChange(visit[4])
+        onDeficationChange(visit[5])
+        onUrinationChange(visit[6])
+        onExtraChange(visit[7])
 
-        onDiagnosisChange(visit[1])
+        onDiagnosisChange(visit[8])
         onCompletedChange(visit[9])
         onRecommendationsChange(visit[10])
 
@@ -726,8 +738,7 @@ fun buildExamination(
                 ) {
 
                     items(8) { count ->
-                        var currentData by remember { mutableStateOf("") }
-                        currentData = when (count) {
+                        var currentData = when (count) {
                             0 -> ownerWords
                             1 -> commonFeeling
                             2 -> temperature
@@ -737,7 +748,20 @@ fun buildExamination(
                             6 -> urination
                             else -> extra
                         }
-                        buildOneNote(currentData, onTextChange = { currentData = it }, labels[count], count)
+
+                        buildOneNote(currentData,
+                            onTextChange = { when (count) {
+                                0 -> onOwnerWordsChange(it)
+                                1 -> onCommonFeelingChange(it)
+                                2 -> onTemperatureChange(it)
+                                3 -> onAppetiteChange(it)
+                                4 -> onVomitChange(it)
+                                5 -> onDeficationChange(it)
+                                6 -> onUrinationChange(it)
+                            }},
+                            labels[count],
+                            count
+                        )
                     }
                     items(3) { count ->
                         var currentData by remember { mutableStateOf("") }

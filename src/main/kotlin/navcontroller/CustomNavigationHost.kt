@@ -56,7 +56,11 @@ fun customNavigationHost(
     recommendations: String,
     onRecommendationsChange: (String) -> Unit,
     date: String,
-    onDateChange: (String) -> Unit
+    onDateChange: (String) -> Unit,
+    isPattern: Boolean,
+    onIsPatternChange: (Boolean) -> Unit,
+    isEdit: Boolean,
+    onIsEditChange: (Boolean) -> Unit
 ) {
     NavigationHost(navController) {
 
@@ -120,7 +124,11 @@ fun customNavigationHost(
                 recommendations,
                 onRecommendationsChange,
                 date,
-                onDateChange
+                onDateChange,
+                isPattern,
+                onIsPatternChange,
+                isEdit,
+                onIsEditChange
             )
         }
     }.build()
