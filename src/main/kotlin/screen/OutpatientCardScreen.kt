@@ -29,7 +29,7 @@ import java.util.Date
 @Composable
 fun buildOutpatientCard(
     navController: NavController,
-    shareData: Int,
+    shareData: Pair<Int, String>,
     onActiveTabChange: (String) -> Unit,
     onTabsSub: (String) -> Unit,
     onTabsAdd: (String) -> Unit,
@@ -376,8 +376,8 @@ fun buildVisitNote(
 
     val dateNow = Date()
     val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
-    val date =
-        if (visit.isEmpty()) formatForDateNow.format(dateNow) else visit[11] + " " + visit[12]
+    val dateTrue =
+        if (visit.isEmpty()) formatForDateNow.format(dateNow) else date
     Box(
         modifier = Modifier
             .padding(start = 380.dp)
@@ -441,7 +441,7 @@ fun buildVisitNote(
             ) {
 
                 Text(
-                    date,
+                    dateTrue,
                     modifier = Modifier
                         .clickable {
                             expanded2 = !expanded2
@@ -459,14 +459,16 @@ fun buildVisitNote(
                     onDismissRequest = { expanded2 = false },
                     modifier = Modifier
                         .background(color = Color.Cyan)
+                        .padding(horizontal = 18.dp)
                 ) {
                     for (i in dates.size - 1 downTo 0 step 2) {
                         DropdownMenuItem(
                             onClick = {
-                                onVisitChange(DataImpl().getInfoByPetId(0).first.second)
+//                                onVisitChange(DataImpl().getInfoByPetId(0).first.second)
+                                expanded2 = false
                             }
                         ) {
-                            Text(dates[i - 1] + " " + dates[i])
+                            Text(DataImpl().readableDateFormat(dates[i - 1] + " " + dates[i]))
                         }
                     }
                 }
@@ -531,7 +533,7 @@ fun buildVisitNote(
             onCompletedChange,
             recommendations,
             onRecommendationsChange,
-            date,
+            dateTrue,
             onDateChange
         )
     }
@@ -601,7 +603,7 @@ fun buildExamination(
         onCompletedChange(visit[9])
         onRecommendationsChange(visit[10])
 
-        onDateChange(visit[11] + visit[12])
+        onDateChange(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
     }
     Box(
         modifier = Modifier

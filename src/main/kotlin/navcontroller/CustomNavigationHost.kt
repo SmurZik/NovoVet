@@ -7,8 +7,8 @@ import screen.markup
 @Composable
 fun customNavigationHost(
     navController: NavController,
-    shareData: Int,
-    onDataChange: (Int) -> Unit,
+    shareData: Pair<Int, String>,
+    onDataChange: (Pair<Int, String>) -> Unit,
     onNicknameTabChange: (String) -> Unit,
     onTabsAdd: (String) -> Unit,
     onTabsSub: (String) -> Unit,

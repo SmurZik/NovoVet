@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 
 class DataImpl {
     private val connection: Connection =
-        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
+        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "")
 
     fun getOutpatientCard(search: String, searchBy: String): Pair<List<String>, Pair<Int, Int>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
@@ -60,7 +60,8 @@ class DataImpl {
 
     fun getVisitDates(id: Int): List<String> {
         val dates = mutableListOf<String>()
-        val searchVisitDates = "select date from visit where id = $id"
+
+        val searchVisitDates = "select date from visit where petId = $id"
         val query = connection.prepareStatement(searchVisitDates)
         val result = query.executeQuery()
         while (result.next()) {
@@ -72,9 +73,9 @@ class DataImpl {
         return dates
     }
 
-    fun getInfoByPetId(id: Int): Pair<Pair<List<String>, List<String>>, Int> {
-        if (id == 0) return Pair(Pair(listOf(), listOf()), 0)
-        val searchByNickname = "select nickname, kind, breed, male, age from pet where id = $id"
+    fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Int> {
+        if (data.first == 0) return Pair(Pair(listOf(), listOf()), 0)
+        val searchByNickname = "select nickname, kind, breed, male, age from pet where id = ${data.first}"
         val searchByNicknameQuery = connection.prepareStatement(searchByNickname)
         val result = searchByNicknameQuery.executeQuery()
         val note = mutableListOf<String>()
@@ -86,7 +87,10 @@ class DataImpl {
             note.add(result.getString(4))
             note.add(result.getString(5))
         }
-        val searchVisitInfo = "SELECT * FROM visit where petId = $id"
+        val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
+        val searchDate = dateFormat.format(formatDate.parse(data.second))
+        val searchVisitInfo = "SELECT * FROM visit where petId = ${data.first} and date = '$searchDate'"
         val searchVisitInfoQuery = connection.prepareStatement(searchVisitInfo)
         val resultVisit = searchVisitInfoQuery.executeQuery()
         while (resultVisit.next()) {
@@ -107,7 +111,7 @@ class DataImpl {
             visit.add(formatForDateNow.format(tempDate))
             visit.add(resultVisit.getTime(3).toString())
         }
-        return Pair(Pair(note, visit), id)
+        return Pair(Pair(note, visit), data.first)
     }
 
     fun setPersonInfo(
@@ -130,5 +134,11 @@ class DataImpl {
 
     fun setVisitInfo() {
 
+    }
+
+    fun readableDateFormat(date: String): String {
+        val template = date.split(":")
+        val tempDate = template[0] + ":" + template[1]
+        return tempDate
     }
 }

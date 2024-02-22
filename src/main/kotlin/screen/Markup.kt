@@ -28,7 +28,7 @@ import navcontroller.Screen
 @Composable
 fun markup(
     navController: NavController,
-    onDataChange: (Int) -> Unit,
+    onDataChange: (Pair<Int, String>) -> Unit,
     onTabsChange: (String) -> Unit,
     onActiveTabChange: (String) -> Unit,
     onNicknameChange: (String) -> Unit,
@@ -96,7 +96,7 @@ fun markup(
                         onSearchByChange("secondName")
                         onAddTextChange(" фамилии")
                     } else {
-                        onDataChange(0)
+                        onDataChange(Pair(0, ""))
                         onTabsChange(Screen.OutpatientCardScreen.name)
                         onActiveTabChange(Screen.OutpatientCardScreen.name)
                         navController.navigate(Screen.OutpatientCardScreen.name)
@@ -219,6 +219,7 @@ fun markup(
         val currentNote = tempPair.first
         val countLines = tempPair.second.first
         val petId = tempPair.second.second
+//        val date = currentNote[5]
 
         LazyColumn {
             items(countLines) { row ->
@@ -247,7 +248,7 @@ fun markup(
                                 .fillMaxHeight()
                                 .clickable {
                                     if (it == 2) {
-                                        onDataChange(petId)
+                                        onDataChange(petId to currentNote[it + row * 4 - 2])
                                         onTabsChange(Screen.OutpatientCardScreen.name)
                                         onActiveTabChange(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)

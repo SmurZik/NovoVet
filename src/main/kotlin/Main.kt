@@ -18,7 +18,7 @@ import navcontroller.*
 
 @Composable
 fun app() {
-    var shareData by remember { mutableStateOf(0) }
+    var shareData by remember { mutableStateOf(Pair(0, "")) }
     var nicknameTab by remember { mutableStateOf("Новый") }
     val tabNaming = mapOf(Screen.JournalScreen.name to "Амбулаторные приемы", Screen.OutpatientCardScreen.name to "$nicknameTab - История болезни")
     val navController by rememberNavController(Screen.JournalScreen.name)
