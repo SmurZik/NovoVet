@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 
 class DataImpl {
     private val connection: Connection =
-        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "")
+        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
 
     fun getOutpatientCard(search: String, searchBy: String): Pair<List<String>, Pair<Int, Int>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")

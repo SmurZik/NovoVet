@@ -751,16 +751,19 @@ fun buildExamination(
                             else -> extra
                         }
 
-                        buildOneNote(currentData,
-                            onTextChange = { when (count) {
-                                0 -> onOwnerWordsChange(it)
-                                1 -> onCommonFeelingChange(it)
-                                2 -> onTemperatureChange(it)
-                                3 -> onAppetiteChange(it)
-                                4 -> onVomitChange(it)
-                                5 -> onDeficationChange(it)
-                                6 -> onUrinationChange(it)
-                            }},
+                        buildOneNote(
+                            currentData,
+                            onTextChange = {
+                                when (count) {
+                                    0 -> onOwnerWordsChange(it)
+                                    1 -> onCommonFeelingChange(it)
+                                    2 -> onTemperatureChange(it)
+                                    3 -> onAppetiteChange(it)
+                                    4 -> onVomitChange(it)
+                                    5 -> onDeficationChange(it)
+                                    6 -> onUrinationChange(it)
+                                }
+                            },
                             labels[count],
                             count
                         )

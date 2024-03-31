@@ -3,6 +3,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -20,7 +21,10 @@ import navcontroller.*
 fun app() {
     var shareData by remember { mutableStateOf(Pair(0, "")) }
     var nicknameTab by remember { mutableStateOf("Новый") }
-    val tabNaming = mapOf(Screen.JournalScreen.name to "Амбулаторные приемы", Screen.OutpatientCardScreen.name to "$nicknameTab - История болезни")
+    val tabNaming = mapOf(
+        Screen.JournalScreen.name to "Амбулаторные приемы",
+        Screen.OutpatientCardScreen.name to "$nicknameTab - История болезни"
+    )
     val navController by rememberNavController(Screen.JournalScreen.name)
     var tabs by remember { mutableStateOf(setOf(Screen.JournalScreen.name)) }
     var activeTab by remember { mutableStateOf(Screen.JournalScreen.name) }
@@ -58,8 +62,13 @@ fun app() {
     Box(
         modifier = Modifier.fillMaxHeight().width(300.dp).background(color = Color.LightGray)
     ) {
+        val modifier: Modifier = Modifier
+            .background(color = Color.Transparent)
+            .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+            .fillMaxWidth()
+            .clickable { }
         Column(
-            modifier = Modifier.padding(top = 8.dp, start = 8.dp).fillMaxHeight().background(color = Color.Cyan)
+            modifier = Modifier.fillMaxHeight().background(color = Color.Cyan)
         ) {
             Text(
                 text = "Лечебная деятельность",
@@ -68,7 +77,7 @@ fun app() {
             )
             for (i in 0..2) {
                 Row(
-                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+                    modifier = modifier
                 ) {
                     Image(
                         painter = when (i) {
@@ -89,9 +98,6 @@ fun app() {
                         letterSpacing = 0.sp,
                         modifier = Modifier
                             .padding(end = 8.dp, start = 8.dp)
-                            .clickable {
-
-                            }
                     )
                 }
             }
@@ -101,7 +107,7 @@ fun app() {
                 modifier = Modifier.padding(all = 8.dp)
             )
             Row(
-                modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+                modifier = modifier
             ) {
                 Image(
                     painter = painterResource("/doc.png"),
@@ -114,9 +120,6 @@ fun app() {
                     letterSpacing = 0.sp,
                     modifier = Modifier
                         .padding(end = 8.dp, start = 8.dp)
-                        .clickable {
-
-                        }
                 )
             }
             Text(
@@ -126,7 +129,7 @@ fun app() {
             )
             for (i in 0..3) {
                 Row(
-                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+                    modifier = modifier
                 ) {
                     Image(
                         painter = when (i) {
@@ -149,9 +152,6 @@ fun app() {
                         letterSpacing = 0.sp,
                         modifier = Modifier
                             .padding(end = 8.dp, start = 8.dp)
-                            .clickable {
-
-                            }
                     )
                 }
             }
@@ -202,7 +202,7 @@ fun app() {
             onDataChange = { shareData = it },
             onTabsAdd = { tabs += it },
             onActiveTabChange = { activeTab = it },
-            onTabsSub = {tabs -= it},
+            onTabsSub = { tabs -= it },
             isSearchChange = { isSearch = it },
             onSearchChange = { search = it },
             onSearchByChange = { searchBy = it },
