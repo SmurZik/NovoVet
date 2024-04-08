@@ -1,8 +1,11 @@
 package navcontroller
 
+import state.OutpatientScreenState
 import androidx.compose.runtime.Composable
 import screen.buildOutpatientCard
 import screen.markup
+import state.IllnessHistoryState
+import state.PetInfoState
 
 @Composable
 fun customNavigationHost(
@@ -13,54 +16,9 @@ fun customNavigationHost(
     onTabsAdd: (String) -> Unit,
     onTabsSub: (String) -> Unit,
     onActiveTabChange: (String) -> Unit,
-    isSearchChange: (Boolean) -> Unit,
-    onSearchChange: (String) -> Unit,
-    onSearchByChange: (String) -> Unit,
-    onAddTextChange: (String) -> Unit,
-    isSearch: Boolean,
-    addText: String,
-    search: String,
-    searchBy: String,
-    nickname: String,
-    onNicknameChange: (String) -> Unit,
-    kind: String,
-    onKindChange: (String) -> Unit,
-    breed: String,
-    onBreedChange: (String) -> Unit,
-    male: String,
-    onMaleChange: (String) -> Unit,
-    age: String,
-    onAgeChange: (String) -> Unit,
-    save: Boolean,
-    onSaveChange: (Boolean) -> Unit,
-    ownerWords: String,
-    onOwnerWordsChange: (String) -> Unit,
-    commonFeeling: String,
-    onCommonFeelingChange: (String) -> Unit,
-    temperature: String,
-    onTemperatureChange: (String) -> Unit,
-    appetite: String,
-    onAppetiteChange: (String) -> Unit,
-    vomit: String,
-    onVomitChange: (String) -> Unit,
-    defication: String,
-    onDeficationChange: (String) -> Unit,
-    urination: String,
-    onUrinationChange: (String) -> Unit,
-    extra: String,
-    onExtraChange: (String) -> Unit,
-    diagnosis: String,
-    onDiagnosisChange: (String) -> Unit,
-    completed: String,
-    onCompletedChange: (String) -> Unit,
-    recommendations: String,
-    onRecommendationsChange: (String) -> Unit,
-    date: String,
-    onDateChange: (String) -> Unit,
-    isPattern: Boolean,
-    onIsPatternChange: (Boolean) -> Unit,
-    isEdit: Boolean,
-    onIsEditChange: (Boolean) -> Unit
+    outpatientScreenState: OutpatientScreenState,
+    petInfoState: PetInfoState,
+    illnessHistoryState: IllnessHistoryState
 ) {
     NavigationHost(navController) {
 
@@ -71,14 +29,7 @@ fun customNavigationHost(
                 onTabsAdd,
                 onActiveTabChange,
                 onNicknameTabChange,
-                isSearchChange,
-                onSearchByChange,
-                onSearchChange,
-                onAddTextChange,
-                isSearch,
-                addText,
-                search,
-                searchBy
+                outpatientScreenState
             )
         }
 
@@ -89,46 +40,8 @@ fun customNavigationHost(
                 onActiveTabChange,
                 onTabsSub,
                 onTabsAdd,
-                nickname,
-                onNicknameChange,
-                kind,
-                onKindChange,
-                breed,
-                onBreedChange,
-                male,
-                onMaleChange,
-                age,
-                onAgeChange,
-                save,
-                onSaveChange,
-                ownerWords,
-                onOwnerWordsChange,
-                commonFeeling,
-                onCommonFeelingChange,
-                temperature,
-                onTemperatureChange,
-                appetite,
-                onAppetiteChange,
-                vomit,
-                onVomitChange,
-                defication,
-                onDeficationChange,
-                urination,
-                onUrinationChange,
-                extra,
-                onExtraChange,
-                diagnosis,
-                onDiagnosisChange,
-                completed,
-                onCompletedChange,
-                recommendations,
-                onRecommendationsChange,
-                date,
-                onDateChange,
-                isPattern,
-                onIsPatternChange,
-                isEdit,
-                onIsEditChange
+                petInfoState,
+                illnessHistoryState
             )
         }
     }.build()

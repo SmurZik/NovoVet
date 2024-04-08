@@ -2,8 +2,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -16,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import navcontroller.*
+import state.StateWrapper
 
 @Composable
 fun app() {
@@ -29,46 +28,15 @@ fun app() {
     var tabs by remember { mutableStateOf(setOf(Screen.JournalScreen.name)) }
     var activeTab by remember { mutableStateOf(Screen.JournalScreen.name) }
 
-    var isSearch by remember { mutableStateOf(false) }
-    var search by remember { mutableStateOf("") }
-    var searchBy by remember { mutableStateOf("secondName") }
-    var addText by remember { mutableStateOf(" фамилии") }
-
-    var nickname by remember { mutableStateOf("") }
-    var kind by remember { mutableStateOf("") }
-    var breed by remember { mutableStateOf("") }
-    var male by remember { mutableStateOf("") }
-    var age by remember { mutableStateOf("") }
-    var save by remember { mutableStateOf(false) }
-
-    var ownerWords by remember { mutableStateOf("") }
-    var commonFeeling by remember { mutableStateOf("") }
-    var temperature by remember { mutableStateOf("") }
-    var appetite by remember { mutableStateOf("") }
-    var vomit by remember { mutableStateOf("") }
-    var defication by remember { mutableStateOf("") }
-    var urination by remember { mutableStateOf("") }
-    var extra by remember { mutableStateOf("") }
-
-    var diagnosis by remember { mutableStateOf("") }
-    var completed by remember { mutableStateOf("") }
-    var recommendations by remember { mutableStateOf("") }
-
-    var date by remember { mutableStateOf("") }
-
-    var isPattern by remember { mutableStateOf(false) }
-    var isEdit by remember { mutableStateOf(false) }
+    val outpatientScreenState = StateWrapper().initialOutpatientScreenState()
+    val petInfoState = StateWrapper().initialPetInfoState()
+    val illnessHistoryState = StateWrapper().initialIllnessHistoryState()
 
     Box(
         modifier = Modifier.fillMaxHeight().width(300.dp).background(color = Color.LightGray)
     ) {
-        val modifier: Modifier = Modifier
-            .background(color = Color.Transparent)
-            .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
-            .fillMaxWidth()
-            .clickable { }
         Column(
-            modifier = Modifier.fillMaxHeight().background(color = Color.Cyan)
+            modifier = Modifier.fillMaxSize().background(color = Color.Cyan)
         ) {
             Text(
                 text = "Лечебная деятельность",
@@ -77,7 +45,7 @@ fun app() {
             )
             for (i in 0..2) {
                 Row(
-                    modifier = modifier
+                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
                 ) {
                     Image(
                         painter = when (i) {
@@ -98,6 +66,9 @@ fun app() {
                         letterSpacing = 0.sp,
                         modifier = Modifier
                             .padding(end = 8.dp, start = 8.dp)
+                            .clickable {
+
+                            }
                     )
                 }
             }
@@ -107,7 +78,7 @@ fun app() {
                 modifier = Modifier.padding(all = 8.dp)
             )
             Row(
-                modifier = modifier
+                modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
             ) {
                 Image(
                     painter = painterResource("/doc.png"),
@@ -120,6 +91,9 @@ fun app() {
                     letterSpacing = 0.sp,
                     modifier = Modifier
                         .padding(end = 8.dp, start = 8.dp)
+                        .clickable {
+
+                        }
                 )
             }
             Text(
@@ -129,7 +103,7 @@ fun app() {
             )
             for (i in 0..3) {
                 Row(
-                    modifier = modifier
+                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
                 ) {
                     Image(
                         painter = when (i) {
@@ -152,6 +126,9 @@ fun app() {
                         letterSpacing = 0.sp,
                         modifier = Modifier
                             .padding(end = 8.dp, start = 8.dp)
+                            .clickable {
+
+                            }
                     )
                 }
             }
@@ -203,54 +180,9 @@ fun app() {
             onTabsAdd = { tabs += it },
             onActiveTabChange = { activeTab = it },
             onTabsSub = { tabs -= it },
-            isSearchChange = { isSearch = it },
-            onSearchChange = { search = it },
-            onSearchByChange = { searchBy = it },
-            onAddTextChange = { addText = it },
-            isSearch = isSearch,
-            addText = addText,
-            search = search,
-            searchBy = searchBy,
-            nickname = nickname,
-            onNicknameChange = { nickname = it },
-            kind = kind,
-            onKindChange = { kind = it },
-            breed = breed,
-            onBreedChange = { breed = it },
-            male = male,
-            onMaleChange = { male = it },
-            age = age,
-            onAgeChange = { age = it },
-            save = save,
-            onSaveChange = { save = it },
-            ownerWords = ownerWords,
-            onOwnerWordsChange = { ownerWords = it },
-            commonFeeling = commonFeeling,
-            onCommonFeelingChange = { commonFeeling = it },
-            temperature = temperature,
-            onTemperatureChange = { temperature = it },
-            appetite = appetite,
-            onAppetiteChange = { appetite = it },
-            vomit = vomit,
-            onVomitChange = { vomit = it },
-            defication = defication,
-            onDeficationChange = { defication = it },
-            urination = urination,
-            onUrinationChange = { urination = it },
-            extra = extra,
-            onExtraChange = { extra = it },
-            diagnosis = diagnosis,
-            onDiagnosisChange = { diagnosis = it },
-            completed = completed,
-            onCompletedChange = { completed = it },
-            recommendations = recommendations,
-            onRecommendationsChange = { recommendations = it },
-            date = date,
-            onDateChange = { date = it },
-            isPattern = isPattern,
-            onIsPatternChange = { isPattern = it },
-            isEdit = isEdit,
-            onIsEditChange = { isEdit = it }
+            outpatientScreenState = outpatientScreenState,
+            petInfoState = petInfoState,
+            illnessHistoryState = illnessHistoryState
         )
     }
 }

@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import data.DataImpl
 import navcontroller.NavController
 import navcontroller.Screen
+import state.IllnessHistoryState
+import state.PetInfoState
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -33,46 +35,8 @@ fun buildOutpatientCard(
     onActiveTabChange: (String) -> Unit,
     onTabsSub: (String) -> Unit,
     onTabsAdd: (String) -> Unit,
-    nickname: String,
-    onNicknameChange: (String) -> Unit,
-    kind: String,
-    onKindChange: (String) -> Unit,
-    breed: String,
-    onBreedChange: (String) -> Unit,
-    male: String,
-    onMaleChange: (String) -> Unit,
-    age: String,
-    onAgeChange: (String) -> Unit,
-    save: Boolean,
-    onSaveChange: (Boolean) -> Unit,
-    ownerWords: String,
-    onOwnerWordsChange: (String) -> Unit,
-    commonFeeling: String,
-    onCommonFeelingChange: (String) -> Unit,
-    temperature: String,
-    onTemperatureChange: (String) -> Unit,
-    appetite: String,
-    onAppetiteChange: (String) -> Unit,
-    vomit: String,
-    onVomitChange: (String) -> Unit,
-    defication: String,
-    onDeficationChange: (String) -> Unit,
-    urination: String,
-    onUrinationChange: (String) -> Unit,
-    extra: String,
-    onExtraChange: (String) -> Unit,
-    diagnosis: String,
-    onDiagnosisChange: (String) -> Unit,
-    completed: String,
-    onCompletedChange: (String) -> Unit,
-    recommendations: String,
-    onRecommendationsChange: (String) -> Unit,
-    date: String,
-    onDateChange: (String) -> Unit,
-    isPattern: Boolean,
-    onIsPatternChange: (Boolean) -> Unit,
-    isEdit: Boolean,
-    onIsEditChange: (Boolean) -> Unit
+    petInfoState: PetInfoState,
+    illnessHistoryState: IllnessHistoryState
 ) {
     var secondName by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
@@ -101,12 +65,12 @@ fun buildOutpatientCard(
         //phoneNumber = note[7]
         //address = note[6]
 
-        if (!save) {
-            onNicknameChange(note[0])
-            onKindChange(note[1])
-            onBreedChange(note[2])
-            onMaleChange(note[3])
-            onAgeChange(note[4])
+        if (!petInfoState.save()) {
+            petInfoState.updateNickname(note[0])
+            petInfoState.updateKind(note[1])
+            petInfoState.updateBreed(note[2])
+            petInfoState.updateMale(note[3])
+            petInfoState.updateAge(note[4])
         }
     } else {
         firstNote = true
@@ -242,25 +206,25 @@ fun buildOutpatientCard(
                     )
                     TextField(
                         value = when (count) {
-                            0 -> nickname
-                            1 -> kind
-                            2 -> breed
-                            3 -> male
-                            else -> age
+                            0 -> petInfoState.nickname()
+                            1 -> petInfoState.kind()
+                            2 -> petInfoState.breed()
+                            3 -> petInfoState.male()
+                            else -> petInfoState.age()
                         },
                         onValueChange = {
                             when (count) {
                                 0 -> {
-                                    onNicknameChange(it)
+                                    petInfoState.updateNickname(it)
                                 }
 
                                 1 -> {
-                                    onKindChange(it)
+                                    petInfoState.updateKind(it)
                                 }
 
-                                2 -> onBreedChange(it)
-                                3 -> onMaleChange(it)
-                                else -> onAgeChange(it)
+                                2 -> petInfoState.updateBreed(it)
+                                3 -> petInfoState.updateMale(it)
+                                else -> petInfoState.updateAge(it)
                             }
                         },
                         modifier = Modifier
@@ -273,7 +237,7 @@ fun buildOutpatientCard(
                         },
                         singleLine = true,
                         textStyle = TextStyle.Default.copy(fontSize = 18.sp),
-                        readOnly = !save
+                        readOnly = !petInfoState.save()
                     )
                 }
             }
@@ -283,60 +247,33 @@ fun buildOutpatientCard(
         ) {
             Button(
                 onClick = {
-                    if (save && firstNote) {
+                    if (petInfoState.save() && firstNote) {
                         DataImpl().setPersonInfo(
                             firstName,
                             secondName,
                             lastName,
-                            nickname,
+                            petInfoState.nickname(),
                             address,
                             phoneNumber,
-                            breed,
-                            kind,
-                            male,
-                            age
+                            petInfoState.breed(),
+                            petInfoState.kind(),
+                            petInfoState.male(),
+                            petInfoState.age()
                         )
                     }
-                    onSaveChange(!save)
+                    petInfoState.updateSave(!petInfoState.save())
                 },
                 modifier = Modifier.padding(top = 350.dp).align(Alignment.Center),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
             ) {
-                Text(if (!save) "Редактировать" else "Сохранить")
+                Text(if (!petInfoState.save()) "Редактировать" else "Сохранить")
             }
         }
         buildVisitNote(
             visit,
             dates,
             onVisitChange = { visit = it },
-            ownerWords,
-            onOwnerWordsChange,
-            commonFeeling,
-            onCommonFeelingChange,
-            temperature,
-            onTemperatureChange,
-            appetite,
-            onAppetiteChange,
-            vomit,
-            onVomitChange,
-            defication,
-            onDeficationChange,
-            urination,
-            onUrinationChange,
-            extra,
-            onExtraChange,
-            diagnosis,
-            onDiagnosisChange,
-            completed,
-            onCompletedChange,
-            recommendations,
-            onRecommendationsChange,
-            date,
-            onDateChange,
-            isPattern,
-            onIsPatternChange,
-            isEdit,
-            onIsEditChange
+            illnessHistoryState
         )
     }
 }
@@ -344,40 +281,13 @@ fun buildOutpatientCard(
 @Composable
 fun buildVisitNote(
     visit: List<String>, dates: List<String>, onVisitChange: (List<String>) -> Unit,
-    ownerWords: String,
-    onOwnerWordsChange: (String) -> Unit,
-    commonFeeling: String,
-    onCommonFeelingChange: (String) -> Unit,
-    temperature: String,
-    onTemperatureChange: (String) -> Unit,
-    appetite: String,
-    onAppetiteChange: (String) -> Unit,
-    vomit: String,
-    onVomitChange: (String) -> Unit,
-    defication: String,
-    onDeficationChange: (String) -> Unit,
-    urination: String,
-    onUrinationChange: (String) -> Unit,
-    extra: String,
-    onExtraChange: (String) -> Unit,
-    diagnosis: String,
-    onDiagnosisChange: (String) -> Unit,
-    completed: String,
-    onCompletedChange: (String) -> Unit,
-    recommendations: String,
-    onRecommendationsChange: (String) -> Unit,
-    date: String,
-    onDateChange: (String) -> Unit,
-    isPattern: Boolean,
-    onIsPatternChange: (Boolean) -> Unit,
-    isEdit: Boolean,
-    onIsEditChange: (Boolean) -> Unit
+    illnessHistoryState: IllnessHistoryState
 ) {
 
     val dateNow = Date()
     val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
     val dateTrue =
-        if (visit.isEmpty()) formatForDateNow.format(dateNow) else date
+        if (visit.isEmpty()) formatForDateNow.format(dateNow) else illnessHistoryState.date()
     Box(
         modifier = Modifier
             .padding(start = 380.dp)
@@ -393,8 +303,8 @@ fun buildVisitNote(
         ) {
             IconButton(
                 onClick = {
-                    onIsPatternChange(true)
-                    onIsEditChange(true)
+                    illnessHistoryState.updateIsPattern(true)
+                    illnessHistoryState.updateIsEdit(true)
                 },
                 modifier = Modifier.padding(top = 14.dp, start = 16.dp).size(20.dp, 20.dp)
             ) {
@@ -406,8 +316,8 @@ fun buildVisitNote(
 
             IconButton(
                 onClick = {
-                    onIsPatternChange(true)
-                    onIsEditChange(false)
+                    illnessHistoryState.updateIsPattern(true)
+                    illnessHistoryState.updateIsEdit(false)
                 },
                 modifier = Modifier.padding(start = 0.dp, bottom = 8.dp, top = 8.dp, end = 16.dp)
             ) {
@@ -507,68 +417,18 @@ fun buildVisitNote(
             }
         }
         buildExamination(
-            isPattern,
+            illnessHistoryState,
             visit,
-            isEdit,
-            onIsPatternChange,
-            ownerWords,
-            onOwnerWordsChange,
-            commonFeeling,
-            onCommonFeelingChange,
-            temperature,
-            onTemperatureChange,
-            appetite,
-            onAppetiteChange,
-            vomit,
-            onVomitChange,
-            defication,
-            onDeficationChange,
-            urination,
-            onUrinationChange,
-            extra,
-            onExtraChange,
-            diagnosis,
-            onDiagnosisChange,
-            completed,
-            onCompletedChange,
-            recommendations,
-            onRecommendationsChange,
-            dateTrue,
-            onDateChange
+            dateTrue
         )
     }
 }
 
 @Composable
 fun buildExamination(
-    isPattern: Boolean,
+    illnessHistoryState: IllnessHistoryState,
     visit: List<String>,
-    isEdit: Boolean,
-    onPatternChange: (Boolean) -> Unit,
-    ownerWords: String,
-    onOwnerWordsChange: (String) -> Unit,
-    commonFeeling: String,
-    onCommonFeelingChange: (String) -> Unit,
-    temperature: String,
-    onTemperatureChange: (String) -> Unit,
-    appetite: String,
-    onAppetiteChange: (String) -> Unit,
-    vomit: String,
-    onVomitChange: (String) -> Unit,
-    defication: String,
-    onDeficationChange: (String) -> Unit,
-    urination: String,
-    onUrinationChange: (String) -> Unit,
-    extra: String,
-    onExtraChange: (String) -> Unit,
-    diagnosis: String,
-    onDiagnosisChange: (String) -> Unit,
-    completed: String,
-    onCompletedChange: (String) -> Unit,
-    recommendations: String,
-    onRecommendationsChange: (String) -> Unit,
-    date: String,
-    onDateChange: (String) -> Unit
+    date: String
 ) {
     val labels = listOf(
         "Со слов владельца: ",
@@ -586,24 +446,23 @@ fun buildExamination(
         "Рекомендации: "
     )
 
-
     var next by remember { mutableStateOf(false) }
 
-    if (visit.isNotEmpty() && !isEdit) {
-        onOwnerWordsChange(visit[0])
-        onCommonFeelingChange(visit[1])
-        onTemperatureChange(visit[2])
-        onAppetiteChange(visit[3])
-        onVomitChange(visit[4])
-        onDeficationChange(visit[5])
-        onUrinationChange(visit[6])
-        onExtraChange(visit[7])
+    if (visit.isNotEmpty() && !illnessHistoryState.getIsEdit()) {
+        illnessHistoryState.updateOwnerWords(visit[0])
+        illnessHistoryState.updateCommonFeeling(visit[1])
+        illnessHistoryState.updateTemperature(visit[2])
+        illnessHistoryState.updateAppetite(visit[3])
+        illnessHistoryState.updateVomit(visit[4])
+        illnessHistoryState.updateDefication(visit[5])
+        illnessHistoryState.updateUrination(visit[6])
+        illnessHistoryState.updateExtra(visit[7])
 
-        onDiagnosisChange(visit[8])
-        onCompletedChange(visit[9])
-        onRecommendationsChange(visit[10])
+        illnessHistoryState.updateDiagnosis(visit[8])
+        illnessHistoryState.updateCompleted(visit[9])
+        illnessHistoryState.updateRecommendations(visit[10])
 
-        onDateChange(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
+        illnessHistoryState.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
     }
     Box(
         modifier = Modifier
@@ -612,7 +471,7 @@ fun buildExamination(
             .fillMaxSize()
     ) {
 
-        if (!isPattern) {
+        if (!illnessHistoryState.getIsPattern()) {
             if (visit.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.padding(8.dp)
@@ -668,19 +527,19 @@ fun buildExamination(
             }
         } else {
 
-            if (!isEdit) {
-                onOwnerWordsChange("")
-                onCommonFeelingChange("")
-                onTemperatureChange("")
-                onAppetiteChange("")
-                onVomitChange("")
-                onDeficationChange("")
-                onUrinationChange("")
-                onExtraChange("")
+            if (!illnessHistoryState.getIsEdit()) {
+                illnessHistoryState.updateOwnerWords("")
+                illnessHistoryState.updateCommonFeeling("")
+                illnessHistoryState.updateTemperature("")
+                illnessHistoryState.updateAppetite("")
+                illnessHistoryState.updateVomit("")
+                illnessHistoryState.updateDefication("")
+                illnessHistoryState.updateUrination("")
+                illnessHistoryState.updateExtra("")
 
-                onDiagnosisChange("")
-                onCompletedChange("")
-                onRecommendationsChange("")
+                illnessHistoryState.updateDiagnosis("")
+                illnessHistoryState.updateCompleted("")
+                illnessHistoryState.updateRecommendations("")
             }
 
             Row(
@@ -722,7 +581,7 @@ fun buildExamination(
                 }
                 Button(
                     onClick = {
-                        onPatternChange(false)
+                        illnessHistoryState.updateIsPattern(false)
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
                     modifier = Modifier.padding(horizontal = 8.dp)
@@ -741,27 +600,28 @@ fun buildExamination(
 
                     items(8) { count ->
                         var currentData = when (count) {
-                            0 -> ownerWords
-                            1 -> commonFeeling
-                            2 -> temperature
-                            3 -> appetite
-                            4 -> vomit
-                            5 -> defication
-                            6 -> urination
-                            else -> extra
+                            0 -> illnessHistoryState.ownerWords()
+                            1 -> illnessHistoryState.commonFeeling()
+                            2 -> illnessHistoryState.temperature()
+                            3 -> illnessHistoryState.appetite()
+                            4 -> illnessHistoryState.vomit()
+                            5 -> illnessHistoryState.defication()
+                            6 -> illnessHistoryState.urination()
+                            else -> illnessHistoryState.extra()
                         }
 
                         buildOneNote(
                             currentData,
                             onTextChange = {
                                 when (count) {
-                                    0 -> onOwnerWordsChange(it)
-                                    1 -> onCommonFeelingChange(it)
-                                    2 -> onTemperatureChange(it)
-                                    3 -> onAppetiteChange(it)
-                                    4 -> onVomitChange(it)
-                                    5 -> onDeficationChange(it)
-                                    6 -> onUrinationChange(it)
+                                    0 -> illnessHistoryState.updateOwnerWords(it)
+                                    1 -> illnessHistoryState.updateCommonFeeling(it)
+                                    2 -> illnessHistoryState.updateTemperature(it)
+                                    3 -> illnessHistoryState.updateAppetite(it)
+                                    4 -> illnessHistoryState.updateVomit(it)
+                                    5 -> illnessHistoryState.updateDefication(it)
+                                    6 -> illnessHistoryState.updateUrination(it)
+                                    else -> illnessHistoryState.updateExtra(it)
                                 }
                             },
                             labels[count],
@@ -769,22 +629,32 @@ fun buildExamination(
                         )
                     }
                     items(3) { count ->
-                        var currentData by remember { mutableStateOf("") }
-                        currentData = when (count) {
-                            0 -> diagnosis
-                            1 -> completed
-                            else -> recommendations
+                        var currentData = when (count) {
+                            0 -> illnessHistoryState.diagnosis()
+                            1 -> illnessHistoryState.completed()
+                            else -> illnessHistoryState.recommendations()
                         }
                         buildBiggerNote(
                             currentData,
-                            onTextChange = { currentData = it },
+                            onTextChange = {
+                                when (count) {
+                                    0 -> illnessHistoryState.updateDiagnosis(it)
+                                    1 -> illnessHistoryState.updateCompleted(it)
+                                    else -> illnessHistoryState.updateRecommendations(it)
+                                }
+                            },
                             labelsBigger[count],
                             next
                         )
                     }
                 }
             } else {
-                buildBiggerNote(completed, onTextChange = { onCompletedChange(it) }, "Выполнено в клинике: ", next)
+                buildBiggerNote(
+                    illnessHistoryState.completed(),
+                    onTextChange = { illnessHistoryState.updateCompleted(it) },
+                    "Выполнено в клинике: ",
+                    next
+                )
             }
         }
     }

@@ -1,11 +1,10 @@
 package screen
 
+import state.OutpatientScreenState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.*
@@ -20,8 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.DataImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import navcontroller.NavController
 import navcontroller.Screen
 
@@ -32,14 +29,7 @@ fun markup(
     onTabsChange: (String) -> Unit,
     onActiveTabChange: (String) -> Unit,
     onNicknameChange: (String) -> Unit,
-    isSearchChange: (Boolean) -> Unit,
-    onSearchByChange: (String) -> Unit,
-    onSearchChange: (String) -> Unit,
-    onAddTextChange: (String) -> Unit,
-    isSearch: Boolean,
-    addText: String,
-    search: String,
-    searchBy: String
+    outpatientScreenState: OutpatientScreenState
 ) {
 //    LazyColumn(
 //        modifier = Modifier
@@ -91,10 +81,10 @@ fun markup(
             Button(
                 onClick = {
                     if (it == 1) {
-                        isSearchChange(!isSearch)
-                        onSearchChange("")
-                        onSearchByChange("secondName")
-                        onAddTextChange(" фамилии")
+                        outpatientScreenState.updateIsSearch(!outpatientScreenState.getIsSearch())
+                        outpatientScreenState.updateSearchText("")
+                        outpatientScreenState.updateSearchBy("secondName")
+                        outpatientScreenState.updateAddText(" фамилии")
                     } else {
                         onDataChange(Pair(0, ""))
                         onTabsChange(Screen.OutpatientCardScreen.name)
@@ -115,7 +105,7 @@ fun markup(
             }
         }
     }
-    if (isSearch) {
+    if (outpatientScreenState.getIsSearch()) {
         Column(
             modifier = Modifier
                 .padding(start = 400.dp, top = 5.dp)
@@ -134,7 +124,7 @@ fun markup(
                 modifier = Modifier.background(color = Color.Transparent)
             ) {
                 Text(
-                    "Поиск по: $addText",
+                    "Поиск по: ${outpatientScreenState.addText()}",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -157,8 +147,8 @@ fun markup(
                     ) {
                         DropdownMenuItem(
                             onClick = {
-                                onSearchByChange("secondName")
-                                onAddTextChange(" фамилии")
+                                outpatientScreenState.updateSearchBy("secondName")
+                                outpatientScreenState.updateAddText(" фамилии")
                                 expanded = false
                             }
                         ) {
@@ -166,8 +156,8 @@ fun markup(
                         }
                         DropdownMenuItem(
                             onClick = {
-                                onSearchByChange("firstName")
-                                onAddTextChange(" имени")
+                                outpatientScreenState.updateSearchBy("firstName")
+                                outpatientScreenState.updateAddText(" имени")
                                 expanded = false
                             }
                         ) {
@@ -175,8 +165,8 @@ fun markup(
                         }
                         DropdownMenuItem(
                             onClick = {
-                                onAddTextChange(" кличке")
-                                onSearchByChange("nickname")
+                                outpatientScreenState.updateAddText(" кличке")
+                                outpatientScreenState.updateSearchBy("nickname")
                                 expanded = false
                             }
                         ) {
@@ -186,10 +176,10 @@ fun markup(
                 }
                 IconButton(
                     onClick = {
-                        isSearchChange(false)
-                        onSearchChange("")
-                        onSearchByChange("secondName")
-                        onAddTextChange(" фамилии")
+                        outpatientScreenState.updateIsSearch(false)
+                        outpatientScreenState.updateSearchText("")
+                        outpatientScreenState.updateSearchBy("secondName")
+                        outpatientScreenState.updateAddText(" фамилии")
                     },
                     modifier = Modifier.padding(start = 30.dp)
                 ) {
@@ -200,9 +190,9 @@ fun markup(
                 }
             }
             TextField(
-                value = search,
+                value = outpatientScreenState.searchText(),
                 onValueChange = {
-                    onSearchChange(it)
+                    outpatientScreenState.updateSearchText(it)
                 },
                 label = { Text("Введите слово для поиска") },
                 modifier = Modifier.width(290.dp).height(50.dp)
@@ -215,7 +205,8 @@ fun markup(
             .fillMaxSize()
     ) {
 
-        val tempPair = DataImpl().getOutpatientCard(search, searchBy)
+        val tempPair =
+            DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy())
         val currentNote = tempPair.first
         val countLines = tempPair.second.first
         val petId = tempPair.second.second
