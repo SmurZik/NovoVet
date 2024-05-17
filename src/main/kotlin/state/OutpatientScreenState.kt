@@ -1,14 +1,15 @@
 package state
 
 import androidx.compose.runtime.*
+import const.Constant
 
 @Stable
 class OutpatientScreenState {
 
     private var isSearch by mutableStateOf(false)
-    private var searchText by mutableStateOf(EMPTY)
-    private var searchBy by mutableStateOf(SEARCH)
-    private var addText by mutableStateOf(SURNAME)
+    private var searchText by mutableStateOf(Constant.EMPTY)
+    private var searchBy by mutableStateOf(Constant.SEARCH)
+    private var addText by mutableStateOf(Constant.SURNAME)
 
     fun updateIsSearch(value: Boolean) {
         isSearch = value
@@ -33,10 +34,4 @@ class OutpatientScreenState {
     }
 
     fun addText(): String = addText
-
-    companion object {
-        private const val EMPTY = ""
-        private const val SEARCH = "secondName"
-        private const val SURNAME = " фамилии"
-    }
 }

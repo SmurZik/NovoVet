@@ -1,21 +1,15 @@
 package navcontroller
 
-import state.OutpatientScreenState
 import androidx.compose.runtime.Composable
 import screen.buildOutpatientCard
 import screen.markup
-import state.IllnessHistoryState
-import state.PetInfoState
+import state.*
 
 @Composable
 fun customNavigationHost(
     navController: NavController,
-    shareData: Pair<Int, String>,
-    onDataChange: (Pair<Int, String>) -> Unit,
-    onNicknameTabChange: (String) -> Unit,
-    onTabsAdd: (String) -> Unit,
-    onTabsSub: (String) -> Unit,
-    onActiveTabChange: (String) -> Unit,
+    shareDataState: ShareDataState,
+    tabState: TabState,
     outpatientScreenState: OutpatientScreenState,
     petInfoState: PetInfoState,
     illnessHistoryState: IllnessHistoryState
@@ -25,21 +19,19 @@ fun customNavigationHost(
         composable(Screen.JournalScreen.name) {
             markup(
                 navController,
-                onDataChange,
-                onTabsAdd,
-                onActiveTabChange,
-                onNicknameTabChange,
-                outpatientScreenState
+                shareDataState,
+                tabState,
+                outpatientScreenState,
+                illnessHistoryState,
+                petInfoState
             )
         }
 
         composable(Screen.OutpatientCardScreen.name) {
             buildOutpatientCard(
                 navController,
-                shareData,
-                onActiveTabChange,
-                onTabsSub,
-                onTabsAdd,
+                shareDataState,
+                tabState,
                 petInfoState,
                 illnessHistoryState
             )

@@ -1,15 +1,16 @@
 package state
 
 import androidx.compose.runtime.*
+import const.Constant
 
 @Stable
 class PetInfoState {
 
-    private var nickname by mutableStateOf("")
-    private var kind by mutableStateOf("")
-    private var breed by mutableStateOf("")
-    private var male by mutableStateOf("")
-    private var age by mutableStateOf("")
+    private var nickname by mutableStateOf(Constant.EMPTY)
+    private var kind by mutableStateOf(Constant.EMPTY)
+    private var breed by mutableStateOf(Constant.EMPTY)
+    private var male by mutableStateOf(Constant.EMPTY)
+    private var age by mutableStateOf(Constant.EMPTY)
     private var save by mutableStateOf(false)
 
     fun updateNickname(value: String) {

@@ -1,6 +1,5 @@
 package screen
 
-import state.OutpatientScreenState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,15 +20,18 @@ import androidx.compose.ui.unit.sp
 import data.DataImpl
 import navcontroller.NavController
 import navcontroller.Screen
+import state.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun markup(
     navController: NavController,
-    onDataChange: (Pair<Int, String>) -> Unit,
-    onTabsChange: (String) -> Unit,
-    onActiveTabChange: (String) -> Unit,
-    onNicknameChange: (String) -> Unit,
-    outpatientScreenState: OutpatientScreenState
+    shareDataState: ShareDataState,
+    tabState: TabState,
+    outpatientScreenState: OutpatientScreenState,
+    illnessHistoryState: IllnessHistoryState,
+    petInfoState: PetInfoState
 ) {
 //    LazyColumn(
 //        modifier = Modifier
@@ -86,11 +88,17 @@ fun markup(
                         outpatientScreenState.updateSearchBy("secondName")
                         outpatientScreenState.updateAddText(" фамилии")
                     } else {
-                        onDataChange(Pair(0, ""))
-                        onTabsChange(Screen.OutpatientCardScreen.name)
-                        onActiveTabChange(Screen.OutpatientCardScreen.name)
+                        shareDataState.updateShareData(Pair(0, ""))
+                        tabState.addTab(Screen.OutpatientCardScreen.name)
+                        tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                         navController.navigate(Screen.OutpatientCardScreen.name)
-                        onNicknameChange("Новый")
+                        tabState.updateNicknameTab("Новый")
+                        StateWrapper().clearIllnessHistoryState(illnessHistoryState)
+                        val dateNow = Date()
+                        val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
+                        illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
+                        StateWrapper().clearPetInfoState(petInfoState)
+                        illnessHistoryState.updateIsNew(true)
                     }
                 },
                 modifier = Modifier
@@ -239,11 +247,17 @@ fun markup(
                                 .fillMaxHeight()
                                 .clickable {
                                     if (it == 2) {
-                                        onDataChange(petId to currentNote[it + row * 4 - 2])
-                                        onTabsChange(Screen.OutpatientCardScreen.name)
-                                        onActiveTabChange(Screen.OutpatientCardScreen.name)
+                                        shareDataState.updateShareData(petId to currentNote[it + row * 4 - 2])
+                                        val info = DataImpl().getInfoByPetId(shareDataState.shareData())
+                                        tabState.addTab(Screen.OutpatientCardScreen.name)
+                                        tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
-                                        onNicknameChange(temp)
+                                        tabState.updateNicknameTab(temp)
+                                        illnessHistoryState.updateVisit(info.first.second)
+                                        illnessHistoryState.updateNote(info.first.first)
+                                        illnessHistoryState.updateId(info.second)
+                                        StateWrapper().fillPetInfoState(petInfoState, info.first.first)
+                                        illnessHistoryState.updateIsNew(false)
                                     }
                                 }
                                 .padding(13.dp)

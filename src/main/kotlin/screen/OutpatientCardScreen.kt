@@ -23,20 +23,17 @@ import androidx.compose.ui.unit.sp
 import data.DataImpl
 import navcontroller.NavController
 import navcontroller.Screen
-import state.IllnessHistoryState
-import state.PetInfoState
+import state.*
 import java.text.SimpleDateFormat
 import java.util.Date
 
 @Composable
 fun buildOutpatientCard(
     navController: NavController,
-    shareData: Pair<Int, String>,
-    onActiveTabChange: (String) -> Unit,
-    onTabsSub: (String) -> Unit,
-    onTabsAdd: (String) -> Unit,
+    shareDataState: ShareDataState,
+    tabState: TabState,
     petInfoState: PetInfoState,
-    illnessHistoryState: IllnessHistoryState
+    illnessHistoryState: IllnessHistoryState,
 ) {
     var secondName by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
@@ -52,10 +49,10 @@ fun buildOutpatientCard(
 
 
 //    CoroutineScope(Dispatchers.Default).launch {
-    val info = DataImpl().getInfoByPetId(shareData)
-    val note = info.first.first
-    var visit by remember { mutableStateOf(info.first.second) }
-    val id = info.second
+//    if (shareDataState.shareData().second == "") illnessHistoryState.updateVisit(info.first.second)
+//    StateWrapper().fillIllnessHistoryState(illnessHistoryState, illnessHistoryState.visit())
+    val id = illnessHistoryState.id()
+    val note = illnessHistoryState.note()
     val dates = DataImpl().getVisitDates(id)
     if (note.isNotEmpty()) {
 //        onSaveChange(true)
@@ -66,11 +63,11 @@ fun buildOutpatientCard(
         //address = note[6]
 
         if (!petInfoState.save()) {
-            petInfoState.updateNickname(note[0])
-            petInfoState.updateKind(note[1])
-            petInfoState.updateBreed(note[2])
-            petInfoState.updateMale(note[3])
-            petInfoState.updateAge(note[4])
+//            petInfoState.updateNickname(note[0])
+//            petInfoState.updateKind(note[1])
+//            petInfoState.updateBreed(note[2])
+//            petInfoState.updateMale(note[3])
+//            petInfoState.updateAge(note[4])
         }
     } else {
         firstNote = true
@@ -81,20 +78,20 @@ fun buildOutpatientCard(
             .background(color = Color(176, 224, 230))
             .fillMaxSize()
     ) {
-        IconButton(
-            onClick = {
-                navController.navigate(Screen.JournalScreen.name)
-                onActiveTabChange(Screen.JournalScreen.name)
-                onTabsAdd(Screen.JournalScreen.name)
-                onTabsSub(Screen.OutpatientCardScreen.name)
-            }
-        ) {
-            Icon(
-                Icons.Filled.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier.size(50.dp)
-            )
-        }
+//        IconButton(
+//            onClick = {
+//                navController.navigate(Screen.JournalScreen.name)
+//                tabState.updateActiveTab(Screen.JournalScreen.name)
+//                tabState.addTab(Screen.JournalScreen.name)
+//                tabState.subTab(Screen.OutpatientCardScreen.name)
+//            }
+//        ) {
+//            Icon(
+//                Icons.Filled.ArrowBack,
+//                contentDescription = "Back",
+//                modifier = Modifier.size(50.dp)
+//            )
+//        }
 
 //        Text(
 //            text = "Данные о хозяине: ",
@@ -247,18 +244,14 @@ fun buildOutpatientCard(
         ) {
             Button(
                 onClick = {
-                    if (petInfoState.save() && firstNote) {
-                        DataImpl().setPersonInfo(
-                            firstName,
-                            secondName,
-                            lastName,
+                    if (petInfoState.save()) {
+                        DataImpl().setPetInfo(
                             petInfoState.nickname(),
-                            address,
-                            phoneNumber,
                             petInfoState.breed(),
                             petInfoState.kind(),
                             petInfoState.male(),
-                            petInfoState.age()
+                            petInfoState.age(),
+                            id
                         )
                     }
                     petInfoState.updateSave(!petInfoState.save())
@@ -270,24 +263,28 @@ fun buildOutpatientCard(
             }
         }
         buildVisitNote(
-            visit,
             dates,
-            onVisitChange = { visit = it },
-            illnessHistoryState
+            illnessHistoryState,
+            shareDataState,
+            illnessHistoryState.visit()
         )
     }
 }
 
 @Composable
 fun buildVisitNote(
-    visit: List<String>, dates: List<String>, onVisitChange: (List<String>) -> Unit,
-    illnessHistoryState: IllnessHistoryState
+    dates: List<String>, illnessHistoryState: IllnessHistoryState, shareDataState: ShareDataState, visit: List<String>
 ) {
 
     val dateNow = Date()
     val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
-    val dateTrue =
-        if (visit.isEmpty()) formatForDateNow.format(dateNow) else illnessHistoryState.date()
+    var enablePrevious by remember { mutableStateOf(true) }
+    var enableNext by remember { mutableStateOf(true) }
+    val visitDate =
+        DataImpl().readableDateFormat(visit[11] + " " + visit[12])
+    if (illnessHistoryState.visit().isNotEmpty() && illnessHistoryState.getIsPattern()) {
+        illnessHistoryState.updateDate(visitDate)
+    }
     Box(
         modifier = Modifier
             .padding(start = 380.dp)
@@ -299,40 +296,67 @@ fun buildVisitNote(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
-//                .wrapContentWidth(Alignment.CenterHorizontally)
         ) {
             IconButton(
                 onClick = {
-                    illnessHistoryState.updateIsPattern(true)
-                    illnessHistoryState.updateIsEdit(true)
+                    illnessHistoryState.updateIsPattern(false)
+                    StateWrapper().fillIllnessHistoryState(illnessHistoryState, visit)
+                    illnessHistoryState.updateDate(visitDate)
                 },
-                modifier = Modifier.padding(top = 14.dp, start = 16.dp).size(20.dp, 20.dp)
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp).size(32.dp),
+                enabled = !illnessHistoryState.getIsNew()
             ) {
                 Icon(
                     imageVector = Icons.Filled.Edit,
-                    contentDescription = "Edit"
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
             IconButton(
                 onClick = {
-                    illnessHistoryState.updateIsPattern(true)
-                    illnessHistoryState.updateIsEdit(false)
+                    illnessHistoryState.updateIsPattern(false)
+                    StateWrapper().clearIllnessHistoryState(illnessHistoryState)
+                    illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
                 },
-                modifier = Modifier.padding(start = 0.dp, bottom = 8.dp, top = 8.dp, end = 16.dp)
+                modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp).size(32.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
+                    painter = painterResource("/add.svg"),
+                    contentDescription = "Add",
+                    Modifier.size(32.dp)
+                )
+            }
+
+            IconButton(
+                onClick = {
+
+                },
+                modifier = Modifier.padding(top = 16.dp).size(32.dp)
+            ) {
+                Image(
+                    painter = painterResource("/save.svg"),
+                    contentDescription = "Save",
+                    Modifier.size(32.dp)
                 )
             }
 
             Button(
                 modifier = Modifier
-                    .padding(8.dp),
+                    .padding(top = 16.dp, start = 128.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
+                enabled = illnessHistoryState.getIsPattern() && enablePrevious,
                 onClick = {
-
+                    val currentDate = illnessHistoryState.date()
+                    val day = currentDate.split(" ")[0]
+                    val index = dates.indexOf(day)
+                    if (index > 1) {
+                        enableNext = true
+                        val newDate = dates[index - 2] + " " + dates[index - 1]
+                        illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate).first.second)
+                    } else {
+                        enablePrevious = false
+                    }
                 }
             ) {
                 Icon(
@@ -347,11 +371,11 @@ fun buildVisitNote(
                 )
             }
             Box(
-                modifier = Modifier.wrapContentSize(Alignment.CenterEnd).padding(all = 8.dp)
+                modifier = Modifier.wrapContentSize(Alignment.CenterEnd).padding(start = 8.dp, end = 8.dp, top = 16.dp)
             ) {
 
                 Text(
-                    dateTrue,
+                    illnessHistoryState.date(),
                     modifier = Modifier
                         .clickable {
                             expanded2 = !expanded2
@@ -372,24 +396,36 @@ fun buildVisitNote(
                         .padding(horizontal = 18.dp)
                 ) {
                     for (i in dates.size - 1 downTo 0 step 2) {
+                        val tempDate = dates[i - 1] + " " + dates[i]
                         DropdownMenuItem(
+                            enabled = illnessHistoryState.getIsPattern(),
                             onClick = {
-//                                onVisitChange(DataImpl().getInfoByPetId(0).first.second)
+                                illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to tempDate).first.second)
                                 expanded2 = false
                             }
                         ) {
-                            Text(DataImpl().readableDateFormat(dates[i - 1] + " " + dates[i]))
+                            Text(DataImpl().readableDateFormat(tempDate))
                         }
                     }
                 }
             }
 
             Button(
-                modifier = Modifier
-                    .padding(8.dp),
+                modifier = Modifier.padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
+                enabled = illnessHistoryState.getIsPattern() && enableNext,
                 onClick = {
+                    val currentDate = illnessHistoryState.date()
+                    val day = currentDate.split(" ")[0]
+                    val index = dates.indexOf(day)
+                    if (index < dates.size - 2) {
+                        enablePrevious = true
+                        val newDate = dates[index + 2] + " " + dates[index + 3]
+                        illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate).first.second)
+                    } else {
+                        enableNext = false
 
+                    }
                 }
             ) {
                 Text(
@@ -403,23 +439,10 @@ fun buildVisitNote(
                     contentDescription = "Next",
                 )
             }
-
-            IconButton(
-                onClick = {
-
-                },
-                modifier = Modifier.padding(top = 10.dp, start = 16.dp).size(30.dp, 30.dp)
-            ) {
-                Image(
-                    painter = painterResource("/save.png"),
-                    contentDescription = "Save"
-                )
-            }
         }
         buildExamination(
             illnessHistoryState,
-            visit,
-            dateTrue
+            illnessHistoryState.visit()
         )
     }
 }
@@ -427,8 +450,7 @@ fun buildVisitNote(
 @Composable
 fun buildExamination(
     illnessHistoryState: IllnessHistoryState,
-    visit: List<String>,
-    date: String
+    visit: List<String>
 ) {
     val labels = listOf(
         "Со слов владельца: ",
@@ -446,24 +468,22 @@ fun buildExamination(
         "Рекомендации: "
     )
 
-    var next by remember { mutableStateOf(false) }
-
-    if (visit.isNotEmpty() && !illnessHistoryState.getIsEdit()) {
-        illnessHistoryState.updateOwnerWords(visit[0])
-        illnessHistoryState.updateCommonFeeling(visit[1])
-        illnessHistoryState.updateTemperature(visit[2])
-        illnessHistoryState.updateAppetite(visit[3])
-        illnessHistoryState.updateVomit(visit[4])
-        illnessHistoryState.updateDefication(visit[5])
-        illnessHistoryState.updateUrination(visit[6])
-        illnessHistoryState.updateExtra(visit[7])
-
-        illnessHistoryState.updateDiagnosis(visit[8])
-        illnessHistoryState.updateCompleted(visit[9])
-        illnessHistoryState.updateRecommendations(visit[10])
-
-        illnessHistoryState.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
-    }
+//    if (visit.isNotEmpty()) {
+//        illnessHistoryState.updateOwnerWords(visit[0])
+//        illnessHistoryState.updateCommonFeeling(visit[1])
+//        illnessHistoryState.updateTemperature(visit[2])
+//        illnessHistoryState.updateAppetite(visit[3])
+//        illnessHistoryState.updateVomit(visit[4])
+//        illnessHistoryState.updateDefication(visit[5])
+//        illnessHistoryState.updateUrination(visit[6])
+//        illnessHistoryState.updateExtra(visit[7])
+//
+//        illnessHistoryState.updateDiagnosis(visit[8])
+//        illnessHistoryState.updateCompleted(visit[9])
+//        illnessHistoryState.updateRecommendations(visit[10])
+//
+//        illnessHistoryState.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
+//    }
     Box(
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp, top = 66.dp)
@@ -471,8 +491,8 @@ fun buildExamination(
             .fillMaxSize()
     ) {
 
-        if (!illnessHistoryState.getIsPattern()) {
-            if (visit.isNotEmpty()) {
+        if (illnessHistoryState.getIsPattern()) {
+            if (visit.isNotEmpty() && !illnessHistoryState.getIsNew()) {
                 LazyColumn(
                     modifier = Modifier.padding(8.dp)
                 ) {
@@ -527,43 +547,44 @@ fun buildExamination(
             }
         } else {
 
-            if (!illnessHistoryState.getIsEdit()) {
-                illnessHistoryState.updateOwnerWords("")
-                illnessHistoryState.updateCommonFeeling("")
-                illnessHistoryState.updateTemperature("")
-                illnessHistoryState.updateAppetite("")
-                illnessHistoryState.updateVomit("")
-                illnessHistoryState.updateDefication("")
-                illnessHistoryState.updateUrination("")
-                illnessHistoryState.updateExtra("")
+//            if (illnessHistoryState.getIsAdded()) {
+//                illnessHistoryState.updateOwnerWords("")
+//                illnessHistoryState.updateCommonFeeling("")
+//                illnessHistoryState.updateTemperature("")
+//                illnessHistoryState.updateAppetite("")
+//                illnessHistoryState.updateVomit("")
+//                illnessHistoryState.updateDefication("")
+//                illnessHistoryState.updateUrination("")
+//                illnessHistoryState.updateExtra("")
+//
+//                illnessHistoryState.updateDiagnosis("")
+//                illnessHistoryState.updateCompleted("")
+//                illnessHistoryState.updateRecommendations("")
+//            }
 
-                illnessHistoryState.updateDiagnosis("")
-                illnessHistoryState.updateCompleted("")
-                illnessHistoryState.updateRecommendations("")
+            if (!illnessHistoryState.next()) {
+                Text(
+                    "Шаблон осмотра: ",
+                    fontSize = 20.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(start = 32.dp, top = 8.dp)
+                )
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .wrapContentWidth(if (next) Alignment.Start else Alignment.End)
+                    .wrapContentWidth(if (illnessHistoryState.next()) Alignment.Start else Alignment.End)
             ) {
-                if (!next) {
-                    Text(
-                        "Шаблон осмотра: ",
-                        fontSize = 20.sp,
-                        fontStyle = FontStyle.Italic,
-                        modifier = Modifier.padding(end = 80.dp, top = 8.dp)
-                    )
-                }
                 Button(
                     onClick = {
-                        next = !next
+                        illnessHistoryState.updateNext(!illnessHistoryState.next())
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
-                    if (next) {
+                    if (illnessHistoryState.next()) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "back"
@@ -581,7 +602,7 @@ fun buildExamination(
                 }
                 Button(
                     onClick = {
-                        illnessHistoryState.updateIsPattern(false)
+                        illnessHistoryState.updateIsPattern(true)
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
                     modifier = Modifier.padding(horizontal = 8.dp)
@@ -593,7 +614,7 @@ fun buildExamination(
                 }
             }
 
-            if (!next) {
+            if (!illnessHistoryState.next()) {
                 LazyColumn(
                     modifier = Modifier.padding(top = 60.dp)
                 ) {
@@ -644,7 +665,7 @@ fun buildExamination(
                                 }
                             },
                             labelsBigger[count],
-                            next
+                            illnessHistoryState.next()
                         )
                     }
                 }
@@ -653,7 +674,7 @@ fun buildExamination(
                     illnessHistoryState.completed(),
                     onTextChange = { illnessHistoryState.updateCompleted(it) },
                     "Выполнено в клинике: ",
-                    next
+                    illnessHistoryState.next()
                 )
             }
         }

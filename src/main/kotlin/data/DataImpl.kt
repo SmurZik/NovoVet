@@ -114,21 +114,18 @@ class DataImpl {
         return Pair(Pair(note, visit), data.first)
     }
 
-    fun setPersonInfo(
-        firstName: String,
-        secondName: String,
-        lastName: String,
+    fun setPetInfo(
         nickname: String,
-        address: String,
-        phoneNumber: String,
         breed: String,
         kind: String,
         male: String,
         age: String,
+        id: Int
     ) {
         val setPerson =
-            "insert into journal (secondName, firstName, lastName, phoneNumber, breed, nickname, adress, kind, male, age) values ('$secondName', '$firstName', '$lastName', '$phoneNumber', '$breed', '$nickname', '$address', '$kind', '$male', '$age');"
-        val setPersonQuery = connection.prepareCall(setPerson)
+            "update pet set breed = '$breed', nickname = '$nickname', kind = '$kind', male = '$male', age = '$age' where id = $id;"
+        val setPersonQuery = connection.prepareStatement(setPerson)
+        println("here")
         setPersonQuery.execute()
     }
 

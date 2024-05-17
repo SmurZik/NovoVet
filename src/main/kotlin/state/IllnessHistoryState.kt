@@ -1,24 +1,29 @@
 package state
 
 import androidx.compose.runtime.*
+import const.Constant
 
 @Stable
 class IllnessHistoryState {
 
-    private var ownerWords by mutableStateOf("")
-    private var commonFeeling by mutableStateOf("")
-    private var temperature by mutableStateOf("")
-    private var appetite by mutableStateOf("")
-    private var vomit by mutableStateOf("")
-    private var defication by mutableStateOf("")
-    private var urination by mutableStateOf("")
-    private var extra by mutableStateOf("")
-    private var diagnosis by mutableStateOf("")
-    private var completed by mutableStateOf("")
-    private var recommendations by mutableStateOf("")
-    private var date by mutableStateOf("")
-    private var isPattern by mutableStateOf(false)
-    private var isEdit by mutableStateOf(false)
+    private var ownerWords by mutableStateOf(Constant.EMPTY)
+    private var commonFeeling by mutableStateOf(Constant.EMPTY)
+    private var temperature by mutableStateOf(Constant.EMPTY)
+    private var appetite by mutableStateOf(Constant.EMPTY)
+    private var vomit by mutableStateOf(Constant.EMPTY)
+    private var defication by mutableStateOf(Constant.EMPTY)
+    private var urination by mutableStateOf(Constant.EMPTY)
+    private var extra by mutableStateOf(Constant.EMPTY)
+    private var diagnosis by mutableStateOf(Constant.EMPTY)
+    private var completed by mutableStateOf(Constant.EMPTY)
+    private var recommendations by mutableStateOf(Constant.EMPTY)
+    private var date by mutableStateOf(Constant.EMPTY)
+    private var isPattern by mutableStateOf(true)
+    private var next by mutableStateOf(false)
+    private var visit by mutableStateOf(listOf(Constant.EMPTY))
+    private var note by mutableStateOf(listOf(Constant.EMPTY))
+    private var id by mutableStateOf(0)
+    private var isNew by mutableStateOf(false)
 
     fun updateOwnerWords(value: String) {
         ownerWords = value
@@ -98,9 +103,33 @@ class IllnessHistoryState {
 
     fun getIsPattern(): Boolean = isPattern
 
-    fun updateIsEdit(value: Boolean) {
-        isEdit = value
+    fun updateNext(value: Boolean) {
+        next = value
     }
 
-    fun getIsEdit(): Boolean = isEdit
+    fun next(): Boolean = next
+
+    fun updateVisit(value: List<String>) {
+        visit = value
+    }
+
+    fun visit(): List<String> = visit
+
+    fun updateNote(value: List<String>) {
+        note = value
+    }
+
+    fun note(): List<String> = note
+
+    fun updateId(value: Int) {
+        id = value
+    }
+
+    fun id(): Int = id
+
+    fun updateIsNew(value: Boolean) {
+        isNew = value
+    }
+
+    fun getIsNew(): Boolean = isNew
 }
