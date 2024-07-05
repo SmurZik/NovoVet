@@ -21,6 +21,20 @@ class StateWrapper {
     }
 
     @Composable
+    fun initialClientsScreenState(): ClientsScreenState {
+        return remember {
+            ClientsScreenState()
+        }
+    }
+
+    @Composable
+    fun initialClientInfoState(): ClientInfoState {
+        return remember {
+            ClientInfoState()
+        }
+    }
+
+    @Composable
     fun initialIllnessHistoryState(): IllnessHistoryState {
         return remember {
             IllnessHistoryState()
@@ -41,13 +55,13 @@ class StateWrapper {
         }
     }
 
-    fun clearPetInfoState(state: PetInfoState) {
-        state.updateAge(Constant.EMPTY)
-        state.updateNickname(Constant.EMPTY)
-        state.updateKind(Constant.EMPTY)
-        state.updateMale(Constant.EMPTY)
-        state.updateBreed(Constant.EMPTY)
-    }
+//    fun clearPetInfoState(state: PetInfoState) {
+//        state.updateAge(Constant.EMPTY)
+//        state.updateNickname(Constant.EMPTY)
+//        state.updateKind(Constant.EMPTY)
+//        state.updateMale(Constant.EMPTY)
+//        state.updateBreed(Constant.EMPTY)
+//    }
 
     fun fillPetInfoState(petInfoState: PetInfoState, note: List<String>) {
         petInfoState.updateNickname(note[0])
@@ -87,5 +101,21 @@ class StateWrapper {
         state.updateVisit(visit)
 
 //        state.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
+    }
+
+    fun fillClientInfoState(state: ClientInfoState, info: Pair<List<String>, List<String>>) {
+        val currentInfo = info.first
+        val additionalInfo = info.second
+        state.updateClientId(currentInfo[0].toInt())
+        state.updateFirstName(currentInfo[2])
+        state.updateSecondName(currentInfo[1])
+        state.updateLastName(currentInfo[3])
+        state.updateAddress(currentInfo[4])
+        state.updatePhoneNumber(currentInfo[5])
+
+        state.updateNickname(additionalInfo[0])
+        state.updateKind(additionalInfo[1])
+        state.updateBreed(additionalInfo[2])
+        state.updateDate(additionalInfo[3])
     }
 }

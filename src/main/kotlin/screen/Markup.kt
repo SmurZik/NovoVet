@@ -17,12 +17,86 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import components.search
 import data.DataImpl
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
-import java.text.SimpleDateFormat
-import java.util.*
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun dialog(
+    active: Boolean,
+    changeActive: (Boolean) -> Unit,
+    navController: NavController,
+    shareDataState: ShareDataState,
+    outpatientScreenState: OutpatientScreenState,
+    tabState: TabState,
+    illnessHistoryState: IllnessHistoryState,
+    petInfoState: PetInfoState,
+    clientsScreenState: ClientsScreenState,
+) {
+    var skipFirstNeg by remember { mutableStateOf(false) }
+    val firstText =
+        "Если есть история болезни у питомца, то нажмите да и воспользуйтесь поиском, иначе нажмите нет и создайте для него карточку"
+    val thirdText = "Есть ли уже данные о клиенте?"
+    if (active) {
+        AlertDialog(
+            onDismissRequest = {
+                changeActive(false)
+                skipFirstNeg = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (!skipFirstNeg) {
+                            outpatientScreenState.updateIsSearch(true)
+                            changeActive(false)
+                            skipFirstNeg = false
+                        } else {
+                            tabState.addTab(Screen.ClientsScreen.name)
+                            tabState.updateActiveTab(Screen.ClientsScreen.name)
+                            navController.navigate(Screen.ClientsScreen.name)
+                            clientsScreenState.updateIsSearch(true)
+                        }
+//                        shareDataState.updateShareData(Pair(0, ""))
+//                        tabState.addTab(Screen.OutpatientCardScreen.name)
+//                        tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
+//                        navController.navigate(Screen.OutpatientCardScreen.name)
+//                        tabState.updateNicknameTab("Новый")
+//                        StateWrapper().clearIllnessHistoryState(illnessHistoryState)
+//                        val dateNow = Date()
+//                        val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
+//                        illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
+//                        StateWrapper().clearPetInfoState(petInfoState)
+//                        illnessHistoryState.updateIsNew(true)
+                    }
+                ) {
+                    Text("Да")
+                }
+            },
+            title = {
+                Text(text = "Был раньше?")
+            },
+            text = {
+                Text(text = if (!skipFirstNeg) firstText else thirdText)
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if (!skipFirstNeg) {
+                            skipFirstNeg = true
+                        } else {
+
+                        }
+                    }
+                ) {
+                    Text("Нет")
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun markup(
@@ -31,7 +105,9 @@ fun markup(
     tabState: TabState,
     outpatientScreenState: OutpatientScreenState,
     illnessHistoryState: IllnessHistoryState,
-    petInfoState: PetInfoState
+    petInfoState: PetInfoState,
+    clientsScreenState: ClientsScreenState,
+    clientInfoState: ClientInfoState
 ) {
 //    LazyColumn(
 //        modifier = Modifier
@@ -53,6 +129,18 @@ fun markup(
 //            }
 //        }
 //    }
+    var active by remember { mutableStateOf(false) }
+    dialog(
+        active = active,
+        changeActive = { active = it },
+        navController = navController,
+        shareDataState = shareDataState,
+        tabState = tabState,
+        illnessHistoryState = illnessHistoryState,
+        petInfoState = petInfoState,
+        outpatientScreenState = outpatientScreenState,
+        clientsScreenState = clientsScreenState
+    )
     LazyRow(
         modifier = Modifier
 //            .padding(start = 60.dp)
@@ -88,17 +176,7 @@ fun markup(
                         outpatientScreenState.updateSearchBy("secondName")
                         outpatientScreenState.updateAddText(" фамилии")
                     } else {
-                        shareDataState.updateShareData(Pair(0, ""))
-                        tabState.addTab(Screen.OutpatientCardScreen.name)
-                        tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
-                        navController.navigate(Screen.OutpatientCardScreen.name)
-                        tabState.updateNicknameTab("Новый")
-                        StateWrapper().clearIllnessHistoryState(illnessHistoryState)
-                        val dateNow = Date()
-                        val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
-                        illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
-                        StateWrapper().clearPetInfoState(petInfoState)
-                        illnessHistoryState.updateIsNew(true)
+                        active = true
                     }
                 },
                 modifier = Modifier
@@ -113,99 +191,9 @@ fun markup(
             }
         }
     }
+    var expanded by remember { mutableStateOf(false) }
     if (outpatientScreenState.getIsSearch()) {
-        Column(
-            modifier = Modifier
-                .padding(start = 400.dp, top = 5.dp)
-                .background(
-                    color = /*Color(218, 189, 171)*/ /*Color.Blue*/ Color(
-                        127,
-                        199,
-                        255
-                    ),
-                    shape = CutCornerShape(5.dp)
-                )
-        ) {
-            var expanded by remember { mutableStateOf(false) }
-
-            Row(
-                modifier = Modifier.background(color = Color.Transparent)
-            ) {
-                Text(
-                    "Поиск по: ${outpatientScreenState.addText()}",
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                )
-                Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-                    IconButton(
-                        onClick = { expanded = !expanded },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "More"
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .background(color = Color.Cyan)
-                    ) {
-                        DropdownMenuItem(
-                            onClick = {
-                                outpatientScreenState.updateSearchBy("secondName")
-                                outpatientScreenState.updateAddText(" фамилии")
-                                expanded = false
-                            }
-                        ) {
-                            Text("Фамилия")
-                        }
-                        DropdownMenuItem(
-                            onClick = {
-                                outpatientScreenState.updateSearchBy("firstName")
-                                outpatientScreenState.updateAddText(" имени")
-                                expanded = false
-                            }
-                        ) {
-                            Text("Имя")
-                        }
-                        DropdownMenuItem(
-                            onClick = {
-                                outpatientScreenState.updateAddText(" кличке")
-                                outpatientScreenState.updateSearchBy("nickname")
-                                expanded = false
-                            }
-                        ) {
-                            Text("Кличка")
-                        }
-                    }
-                }
-                IconButton(
-                    onClick = {
-                        outpatientScreenState.updateIsSearch(false)
-                        outpatientScreenState.updateSearchText("")
-                        outpatientScreenState.updateSearchBy("secondName")
-                        outpatientScreenState.updateAddText(" фамилии")
-                    },
-                    modifier = Modifier.padding(start = 30.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Close"
-                    )
-                }
-            }
-            TextField(
-                value = outpatientScreenState.searchText(),
-                onValueChange = {
-                    outpatientScreenState.updateSearchText(it)
-                },
-                label = { Text("Введите слово для поиска") },
-                modifier = Modifier.width(290.dp).height(50.dp)
-            )
-        }
+        search(outpatientScreenState, expanded, onExpandedChange = { expanded = it })
     }
     Card(
         modifier = Modifier
@@ -255,9 +243,22 @@ fun markup(
                                         tabState.updateNicknameTab(temp)
                                         illnessHistoryState.updateVisit(info.first.second)
                                         illnessHistoryState.updateNote(info.first.first)
-                                        illnessHistoryState.updateId(info.second)
+                                        illnessHistoryState.updateId(info.second.first)
+                                        illnessHistoryState.updateVisitId(info.second.second)
+                                        illnessHistoryState.updateIsPattern(true)
                                         StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
+                                    } else {
+                                        val info = DataImpl().getClientInfo(petId)
+                                        StateWrapper().fillClientInfoState(
+                                            clientInfoState,
+                                            info.first
+                                        )
+                                        clientInfoState.updateAddInfo(info.first.second)
+                                        clientInfoState.updateCountLines(info.second)
+                                        tabState.addTab(Screen.ClientInfoScreen.name)
+                                        tabState.updateActiveTab(Screen.ClientInfoScreen.name)
+                                        navController.navigate(Screen.ClientInfoScreen.name)
                                     }
                                 }
                                 .padding(13.dp)

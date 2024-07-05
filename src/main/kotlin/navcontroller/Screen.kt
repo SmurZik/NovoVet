@@ -2,5 +2,7 @@ package navcontroller
 
 enum class Screen {
     OutpatientCardScreen,
-    JournalScreen
+    JournalScreen,
+    ClientsScreen,
+    ClientInfoScreen
 }

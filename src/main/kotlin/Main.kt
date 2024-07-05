@@ -14,14 +14,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import navcontroller.*
+import state.State
 import state.StateWrapper
 
 @Composable
 fun app() {
     val tabState = StateWrapper().initialTabState()
+    val clientInfoState = StateWrapper().initialClientInfoState()
     val tabNaming = mapOf(
         Screen.JournalScreen.name to "Амбулаторные приемы",
-        Screen.OutpatientCardScreen.name to "${tabState.nicknameTab()} - История болезни"
+        Screen.OutpatientCardScreen.name to "${tabState.nicknameTab()} - История болезни",
+        Screen.ClientsScreen.name to "Владельцы",
+        Screen.ClientInfoScreen.name to "Клиент: ${
+            clientInfoState.secondName() + " " + if (clientInfoState.firstName()
+                    .isNotEmpty()
+            ) clientInfoState.firstName()
+                .first() else {
+                ""
+            } + "." + if (clientInfoState.lastName().isNotEmpty()) clientInfoState.lastName()
+                .first() else ""
+        }"
     )
 
     val navController by rememberNavController(Screen.JournalScreen.name)
@@ -30,6 +42,7 @@ fun app() {
     val petInfoState = StateWrapper().initialPetInfoState()
     val illnessHistoryState = StateWrapper().initialIllnessHistoryState()
     val shareDataState = StateWrapper().initialShareDataState()
+    val clientsScreenState = StateWrapper().initialClientsScreenState()
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
@@ -96,7 +109,13 @@ fun app() {
             )
             for (i in 0..3) {
                 Row(
-                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable { }
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
+                        if (i == 0) {
+                            tabState.addTab(Screen.ClientsScreen.name)
+                            tabState.updateActiveTab(Screen.ClientsScreen.name)
+                            navController.navigate(Screen.ClientsScreen.name)
+                        }
+                    }
                 ) {
                     Image(
                         painter = when (i) {
@@ -168,7 +187,9 @@ fun app() {
             tabState = tabState,
             outpatientScreenState = outpatientScreenState,
             petInfoState = petInfoState,
-            illnessHistoryState = illnessHistoryState
+            illnessHistoryState = illnessHistoryState,
+            clientsScreenState = clientsScreenState,
+            clientInfoState = clientInfoState
         )
     }
 }

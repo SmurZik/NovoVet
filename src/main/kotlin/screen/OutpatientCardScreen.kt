@@ -26,6 +26,7 @@ import navcontroller.Screen
 import state.*
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.xml.crypto.Data
 
 @Composable
 fun buildOutpatientCard(
@@ -35,14 +36,6 @@ fun buildOutpatientCard(
     petInfoState: PetInfoState,
     illnessHistoryState: IllnessHistoryState,
 ) {
-    var secondName by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес")
-
-
     var firstNote by remember { mutableStateOf(false) }
 
     val labels2 = listOf("Кличка", "Вид", "Порода", "Пол", "Возраст")
@@ -61,14 +54,6 @@ fun buildOutpatientCard(
         //lastName = note[2]
         //phoneNumber = note[7]
         //address = note[6]
-
-        if (!petInfoState.save()) {
-//            petInfoState.updateNickname(note[0])
-//            petInfoState.updateKind(note[1])
-//            petInfoState.updateBreed(note[2])
-//            petInfoState.updateMale(note[3])
-//            petInfoState.updateAge(note[4])
-        }
     } else {
         firstNote = true
     }
@@ -78,97 +63,6 @@ fun buildOutpatientCard(
             .background(color = Color(176, 224, 230))
             .fillMaxSize()
     ) {
-//        IconButton(
-//            onClick = {
-//                navController.navigate(Screen.JournalScreen.name)
-//                tabState.updateActiveTab(Screen.JournalScreen.name)
-//                tabState.addTab(Screen.JournalScreen.name)
-//                tabState.subTab(Screen.OutpatientCardScreen.name)
-//            }
-//        ) {
-//            Icon(
-//                Icons.Filled.ArrowBack,
-//                contentDescription = "Back",
-//                modifier = Modifier.size(50.dp)
-//            )
-//        }
-
-//        Text(
-//            text = "Данные о хозяине: ",
-//            modifier = Modifier
-//                .padding(top = 50.dp, start = 16.dp),
-//            fontSize = 20.sp,
-//            fontStyle = FontStyle.Italic
-//        )
-//
-//        LazyHorizontalGrid(
-//            rows = GridCells.Fixed(3),
-//            modifier = Modifier
-//                .padding(top = 80.dp, start = 8.dp)
-//                .height(195.dp)
-//                .background(color = Color(64, 224, 208), shape = RoundedCornerShape(16.dp))
-//        ) {
-//            items(5) { count ->
-//                Row(
-//                    modifier = Modifier
-//                        .height(60.dp)
-//                        .padding(
-//                            top = if (count % 3 == 1) 3.dp else 0.dp
-//                        )
-//                ) {
-//                    Text(
-//                        labels[count] + ": ",
-//                        modifier = Modifier
-//                            .width(100.dp)
-//                            .padding(
-//                                start = 8.dp,
-//                                top = if (count % 3 == 0) 16.dp else 0.dp
-//                            )
-//                            .align(Alignment.CenterVertically),
-//                        textAlign = TextAlign.Start,
-//                        fontSize = 18.sp
-//                    )
-//                    TextField(
-//                        value = when (count) {
-//                            0 -> secondName
-//                            1 -> firstName
-//                            2 -> lastName
-//                            3 -> phoneNumber
-//                            else -> address
-//                        },
-//                        onValueChange = {
-//                            when (count) {
-//                                0 -> {
-//                                    secondName = it
-//                                }
-//
-//                                1 -> {
-//                                    firstName = it
-//                                }
-//
-//                                2 -> lastName = it
-//                                3 -> phoneNumber = it
-//                                else -> address = it
-//                            }
-//                        },
-//                        modifier = Modifier
-//                            .width(200.dp)
-//                            .padding(
-//                                top = if (count == 0) 8.dp else if (count == 3) 8.dp else 0.dp,
-//                                bottom = if (count == 2) 8.dp else 0.dp,
-//                                end = if (count > 2) 8.dp else 0.dp
-//                            )
-//                            .height(55.dp),
-//                        placeholder = {
-//                            Text(labels[count])
-//                        },
-//                        singleLine = true,
-//                        textStyle = TextStyle.Default.copy(fontSize = 18.sp),
-//                        readOnly = !save
-//                    )
-//                }
-//            }
-//        }
 
         Text(
             text = "Данные о питомце: ",
@@ -273,11 +167,14 @@ fun buildOutpatientCard(
 
 @Composable
 fun buildVisitNote(
-    dates: List<String>, illnessHistoryState: IllnessHistoryState, shareDataState: ShareDataState, visit: List<String>
+    dates: List<Pair<String, String>>,
+    illnessHistoryState: IllnessHistoryState,
+    shareDataState: ShareDataState,
+    visit: List<String>
 ) {
 
     val dateNow = Date()
-    val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm")
+    val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
     var enablePrevious by remember { mutableStateOf(true) }
     var enableNext by remember { mutableStateOf(true) }
     val visitDate =
@@ -300,6 +197,7 @@ fun buildVisitNote(
             IconButton(
                 onClick = {
                     illnessHistoryState.updateIsPattern(false)
+                    illnessHistoryState.updateIsNewVisitInfo(false)
                     StateWrapper().fillIllnessHistoryState(illnessHistoryState, visit)
                     illnessHistoryState.updateDate(visitDate)
                 },
@@ -316,6 +214,7 @@ fun buildVisitNote(
             IconButton(
                 onClick = {
                     illnessHistoryState.updateIsPattern(false)
+                    illnessHistoryState.updateIsNewVisitInfo(true)
                     StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                     illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
                 },
@@ -327,18 +226,41 @@ fun buildVisitNote(
                     Modifier.size(32.dp)
                 )
             }
-
-            IconButton(
-                onClick = {
-
-                },
-                modifier = Modifier.padding(top = 16.dp).size(32.dp)
-            ) {
-                Image(
-                    painter = painterResource("/save.svg"),
-                    contentDescription = "Save",
-                    Modifier.size(32.dp)
-                )
+            if (!illnessHistoryState.getIsPattern()) {
+                IconButton(
+                    onClick = {
+                        DataImpl().setVisitInfo(
+                            id = illnessHistoryState.visitId(),
+                            isNew = illnessHistoryState.getIsNewVisitInfo(),
+                            petId = illnessHistoryState.id(),
+                            date = illnessHistoryState.date(),
+                            sum = "500",
+                            ownerWords = illnessHistoryState.ownerWords(),
+                            commonFeeling = illnessHistoryState.commonFeeling(),
+                            temperature = illnessHistoryState.temperature(),
+                            appetite = illnessHistoryState.appetite(),
+                            vomit = illnessHistoryState.vomit(),
+                            defication = illnessHistoryState.defication(),
+                            urination = illnessHistoryState.urination(),
+                            extra = illnessHistoryState.extra(),
+                            diagnosis = illnessHistoryState.diagnosis(),
+                            completed = illnessHistoryState.completed(),
+                            recommendations = illnessHistoryState.recommendations()
+                        )
+                        val info =
+                            DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
+                        StateWrapper().fillIllnessHistoryState(illnessHistoryState, info.first.second)
+                        illnessHistoryState.updateIsPattern(true)
+                        println(illnessHistoryState.visit())
+                    },
+                    modifier = Modifier.padding(top = 16.dp).size(32.dp)
+                ) {
+                    Image(
+                        painter = painterResource("/save.svg"),
+                        contentDescription = "Save",
+                        Modifier.size(32.dp)
+                    )
+                }
             }
 
             Button(
@@ -349,11 +271,15 @@ fun buildVisitNote(
                 onClick = {
                     val currentDate = illnessHistoryState.date()
                     val day = currentDate.split(" ")[0]
-                    val index = dates.indexOf(day)
-                    if (index > 1) {
+                    val time = currentDate.split(" ")[1]
+                    val index = dates.indexOf(day to time)
+                    if (index > 0) {
                         enableNext = true
-                        val newDate = dates[index - 2] + " " + dates[index - 1]
-                        illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate).first.second)
+                        val newDate = dates[index - 1]
+                        val newVisitInfo =
+                            DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate.first + " " + newDate.second)
+                        illnessHistoryState.updateVisit(newVisitInfo.first.second)
+                        illnessHistoryState.updateVisitId(newVisitInfo.second.second)
                     } else {
                         enablePrevious = false
                     }
@@ -395,16 +321,21 @@ fun buildVisitNote(
                         .background(color = Color.Cyan)
                         .padding(horizontal = 18.dp)
                 ) {
-                    for (i in dates.size - 1 downTo 0 step 2) {
-                        val tempDate = dates[i - 1] + " " + dates[i]
+                    for (i in dates.size - 1 downTo 0) {
+                        val tempDate = dates[i]
                         DropdownMenuItem(
                             enabled = illnessHistoryState.getIsPattern(),
                             onClick = {
-                                illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to tempDate).first.second)
+                                val newVisitInfo =
+                                    DataImpl().getInfoByPetId(shareDataState.shareData().first to tempDate.first + " " + tempDate.second)
+                                illnessHistoryState.updateVisit(newVisitInfo.first.second)
+                                illnessHistoryState.updateVisitId(newVisitInfo.second.second)
                                 expanded2 = false
+                                enableNext = true
+                                enablePrevious = true
                             }
                         ) {
-                            Text(DataImpl().readableDateFormat(tempDate))
+                            Text(DataImpl().readableDateFormat(tempDate.first + " " + tempDate.second))
                         }
                     }
                 }
@@ -417,11 +348,15 @@ fun buildVisitNote(
                 onClick = {
                     val currentDate = illnessHistoryState.date()
                     val day = currentDate.split(" ")[0]
-                    val index = dates.indexOf(day)
-                    if (index < dates.size - 2) {
+                    val time = currentDate.split(" ")[1]
+                    val index = dates.indexOf(day to time)
+                    if (index < dates.size - 1) {
                         enablePrevious = true
-                        val newDate = dates[index + 2] + " " + dates[index + 3]
-                        illnessHistoryState.updateVisit(DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate).first.second)
+                        val newDate = dates[index + 1]
+                        val newVisitInfo =
+                            DataImpl().getInfoByPetId(shareDataState.shareData().first to newDate.first + " " + newDate.second)
+                        illnessHistoryState.updateVisit(newVisitInfo.first.second)
+                        illnessHistoryState.updateVisitId(newVisitInfo.second.second)
                     } else {
                         enableNext = false
 
@@ -603,6 +538,7 @@ fun buildExamination(
                 Button(
                     onClick = {
                         illnessHistoryState.updateIsPattern(true)
+                        illnessHistoryState.updateIsNewVisitInfo(false)
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
                     modifier = Modifier.padding(horizontal = 8.dp)

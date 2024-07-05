@@ -24,6 +24,8 @@ class IllnessHistoryState {
     private var note by mutableStateOf(listOf(Constant.EMPTY))
     private var id by mutableStateOf(0)
     private var isNew by mutableStateOf(false)
+    private var isNewVisitInfo by mutableStateOf(false)
+    private var visitId by mutableStateOf(0)
 
     fun updateOwnerWords(value: String) {
         ownerWords = value
@@ -132,4 +134,16 @@ class IllnessHistoryState {
     }
 
     fun getIsNew(): Boolean = isNew
+
+    fun updateVisitId(value: Int) {
+        visitId = value
+    }
+
+    fun visitId(): Int = visitId
+
+    fun updateIsNewVisitInfo(value: Boolean) {
+        isNewVisitInfo = value
+    }
+
+    fun getIsNewVisitInfo(): Boolean = isNewVisitInfo
 }

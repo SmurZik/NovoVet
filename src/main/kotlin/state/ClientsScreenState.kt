@@ -1,10 +1,11 @@
 package state
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import const.Constant
 
-@Stable
-class OutpatientScreenState: State {
+class ClientsScreenState: State {
 
     private var isSearch by mutableStateOf(false)
     private var searchText by mutableStateOf(Constant.EMPTY)
