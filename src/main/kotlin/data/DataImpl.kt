@@ -3,18 +3,20 @@ package data
 import java.sql.Connection
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
+import kotlin.math.ceil
 
 class DataImpl {
     private val connection: Connection =
         DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
 
-    fun getOutpatientCard(search: String, searchBy: String): Pair<List<String>, Pair<Int, Int>> {
+    fun getOutpatientCard(search: String, searchBy: String): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
+        val clientIds = mutableListOf<Int>()
         var countLines = 1
-        var petId = 1
+        val petIds = mutableListOf<Int>()
         val getOutpatient =
-            if (search.isNotEmpty()) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where $searchBy REGEXP '^$search' order by date DESC"
-            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC"
+            if (search.isNotEmpty()) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where $searchBy REGEXP '^$search' order by date DESC"
+            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC"
         val query = connection.prepareStatement(getOutpatient)
         val outpatient = query.executeQuery()
         val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
@@ -27,22 +29,31 @@ class DataImpl {
                 )
             )
             currentNote.add(outpatient.getString(5))
-            currentNote.add(outpatient.getDouble(6).toString())
-            petId = outpatient.getInt(7)
+            currentNote.add(outpatient.getString(6))
+            petIds.add(outpatient.getInt(7))
+            clientIds.add(outpatient.getInt(8))
         }
-        return Pair(currentNote, Pair(countLines, petId))
+        return Pair(Pair(currentNote, clientIds), Pair(countLines, petIds))
     }
-// здесь надо получать id клиента, а не petId. нужно взять где-нибудь выше и обновлять clientInfoState, и сюда потом просто передать его
-    fun getClientInfo(petId: Int): Pair<Pair<List<String>, List<String>>, Int> {
-        val getClientInfo = "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed, visit.date from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC limit 1"
+
+    fun updatePrice(price: Int, visitId: Int) {
+        val updatePrice =
+            "update visit set sum = $price where id = $visitId"
+        val updatePriceQuery = connection.prepareStatement(updatePrice)
+        updatePriceQuery.execute()
+    }
+
+    fun getClientInfo(clientId: Int): Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>> {
+        val getClientInfo =
+            "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed, MAX(visit.date), pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where person.id = $clientId group by pet.id "
         val getClientInfoQuery = connection.prepareStatement(getClientInfo)
-        val info = mutableListOf("Кличка", "Вид", "Порода", "Последний визит")
-        val currentNote = mutableListOf<String>()
+        var info = mutableListOf("Кличка", "Вид", "Порода", "Последний визит")
+        var currentNote = mutableListOf<String>()
         val clientInfo = getClientInfoQuery.executeQuery()
+        val petIds = mutableListOf<Int>()
         var countLines = 1
         while (clientInfo.next()) {
             countLines++
-
             currentNote.add(clientInfo.getInt(1).toString())
             currentNote.add(clientInfo.getString(2))
             currentNote.add(clientInfo.getString(3))
@@ -53,10 +64,41 @@ class DataImpl {
             info.add(clientInfo.getString(7))
             info.add(clientInfo.getString(8))
             info.add(clientInfo.getString(9))
-            // сделать дату нормально датой, а не строкой, чтобы получить привычный формат
-            info.add(readableDateFormat(clientInfo.getString(10)))
+            val tempDate = clientInfo.getDate(10)
+            val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
+            info.add(formatForDateNow.format(tempDate) + " " + clientInfo.getTime(10).toString())
+            petIds.add(clientInfo.getInt(11))
         }
-        return Pair(Pair(currentNote, info), countLines)
+        if (currentNote.isEmpty()) {
+            val getClientInfoWithoutVisit =
+                "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed from person join pet on person.id = pet.ownerId where person.id = $clientId limit 1"
+            val getClientInfoWithoutVisitQuery = connection.prepareStatement(getClientInfoWithoutVisit)
+            val infoWithoutVisit = mutableListOf("Кличка", "Вид", "Порода", "Последний визит")
+            val currentNoteWithoutVisit = mutableListOf<String>()
+            val clientInfoWithoutVisit = getClientInfoWithoutVisitQuery.executeQuery()
+            var countLinesWithoutVisit = 1
+            while (clientInfoWithoutVisit.next()) {
+                countLinesWithoutVisit++
+
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getInt(1).toString())
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(2))
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(3))
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(4))
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(5))
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(6))
+
+                infoWithoutVisit.add(clientInfoWithoutVisit.getString(7))
+                infoWithoutVisit.add(clientInfoWithoutVisit.getString(8))
+                infoWithoutVisit.add(clientInfoWithoutVisit.getString(9))
+                infoWithoutVisit.add("-")
+                infoWithoutVisit.add("")
+                petIds.add(clientInfoWithoutVisit.getInt(11))
+            }
+            currentNote = currentNoteWithoutVisit
+            info = infoWithoutVisit
+            countLines = countLinesWithoutVisit
+        }
+        return Pair(Pair(currentNote, info), Pair(countLines, petIds))
     }
 
     fun getVisitDates(id: Int): List<Pair<String, String>> {
@@ -118,6 +160,25 @@ class DataImpl {
         return Pair(Pair(note, visit), data.first to visitId)
     }
 
+    fun getPetId(
+        nickname: String,
+        kind: String,
+        breed: String,
+        male: String,
+        age: String,
+        clientId: Int
+    ): Int {
+        var petId = 0
+        val getPetId =
+            "select id from pet where nickname = '$nickname' and breed = '$breed' and kind = '$kind' and male = '$male' and age = '$age' and ownerId = $clientId"
+        val getPetIdQuery = connection.prepareStatement(getPetId)
+        val result = getPetIdQuery.executeQuery()
+        while (result.next()) {
+            petId = result.getInt(1)
+        }
+        return petId
+    }
+
     fun setPetInfo(
         nickname: String,
         breed: String,
@@ -151,7 +212,7 @@ class DataImpl {
         isNew: Boolean,
         petId: Int,
         date: String,
-        sum: String,
+        sum: Int,
         ownerWords: String,
         commonFeeling: String,
         temperature: String,
@@ -174,7 +235,7 @@ class DataImpl {
             setVisitQuery.execute()
         } else {
             val updateVisit =
-                "update visit set petId = '$petId', date = '$formattedDate', sum = '$sum', ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations'  where id = $id;"
+                "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations'  where id = $id;"
             val setVisitQuery = connection.prepareStatement(updateVisit)
             setVisitQuery.execute()
         }
@@ -186,12 +247,135 @@ class DataImpl {
         return tempDate
     }
 
-    fun getClientsInfo(search: String, searchBy: String): Pair<List<String>, Int> {
+    fun addPetInfo(
+        nickname: String,
+        kind: String,
+        breed: String,
+        male: String,
+        age: String,
+        clientId: Int
+    ) {
+        val setNewPet =
+            "INSERT INTO pet (nickname, kind, breed, male, age, ownerId) VALUES ('$nickname', '$kind', '$breed', '$male', '$age', '$clientId');"
+        val setNewClientQuery = connection.prepareStatement(setNewPet)
+        setNewClientQuery.execute()
+    }
+
+    fun addClientInfo(
+        secondName: String,
+        firstName: String,
+        lastName: String,
+        address: String,
+        phone: String
+    ): Int {
+        var clientId = 0
+        val setNewClient =
+            "INSERT INTO person (secondName, firstName, lastName, address, phone) VALUES ('$secondName', '$firstName', '$lastName', '$address', '$phone');"
+        val setNewClientQuery = connection.prepareStatement(setNewClient)
+        setNewClientQuery.execute()
+        val getClientId =
+            "SELECT id from person where secondName = '$secondName' and firstName = '$firstName' and lastName = '$lastName' and address = '$address' and phone = '$phone';"
+        val getClientIdQuery = connection.prepareStatement(getClientId)
+        val result = getClientIdQuery.executeQuery()
+        while (result.next()) {
+            clientId = result.getInt(1)
+        }
+        return clientId
+    }
+
+    fun getServices(): Pair<List<String>, Pair<Int, List<Int>>> {
+        val currentNote = mutableListOf("Название услуги", "Стоимость")
+        val serviceIds = mutableListOf<Int>()
+        var countLines = 1
+        val getServices =
+            "SELECT name, price, id from services order by name ASC;"
+        val query = connection.prepareStatement(getServices)
+        val result = query.executeQuery()
+        while (result.next()) {
+            countLines++
+            currentNote.add(result.getString(1))
+            currentNote.add(result.getString(2))
+            serviceIds.add(result.getInt(3))
+        }
+        return currentNote to Pair(countLines, serviceIds)
+    }
+
+    fun getDrugs(): Pair<List<String>, Pair<Int, List<Int>>> {
+        val currentNote = mutableListOf("Название препарата", "Стоимость (мл)")
+        val drugIds = mutableListOf<Int>()
+        var countLines = 1
+        val getDrugs =
+            "SELECT name, price, id from drugs order by name ASC;"
+        val query = connection.prepareStatement(getDrugs)
+        val result = query.executeQuery()
+        while (result.next()) {
+            countLines++
+            currentNote.add(result.getString(1))
+            currentNote.add(result.getString(2))
+            drugIds.add(result.getInt(3))
+        }
+        return currentNote to Pair(countLines, drugIds)
+    }
+
+    fun addService(name: String, price: String) {
+        val setNewService =
+            "insert into services (name, price) values ('$name', '$price');"
+        val setNewServiceQuery = connection.prepareStatement(setNewService)
+        setNewServiceQuery.execute()
+    }
+
+    fun addDrug(name: String, price: String) {
+        val setNewDrug =
+            "insert into drugs (name, price) values ('$name', '$price');"
+        val setNewDrugQuery = connection.prepareStatement(setNewDrug)
+        setNewDrugQuery.execute()
+    }
+
+    fun editService(name: String, price: String, id: Int) {
+        val editService =
+            "update services set name = '$name', price = '$price' where id = $id"
+        val editServiceQuery = connection.prepareStatement(editService)
+        editServiceQuery.execute()
+    }
+
+    fun editDrug(name: String, price: String, id: Int) {
+        val editDrug =
+            "update drugs set name = '$name', price = '$price' where id = $id"
+        val editDrugQuery = connection.prepareStatement(editDrug)
+        editDrugQuery.execute()
+    }
+
+    fun getServiceByFirstLetter(name: String): List<String> {
+        val services = mutableListOf<String>()
+        val getServices =
+            "select name from services where name REGEXP '$name'"
+        val query = connection.prepareStatement(getServices)
+        val result = query.executeQuery()
+        while (result.next()) {
+            services.add(result.getString(1))
+        }
+        return services
+    }
+
+    fun getDrugByFirstLetter(name: String): List<String> {
+        val drugs = mutableListOf<String>()
+        val getDrugs =
+            "select name from drugs where name REGEXP '$name'"
+        val query = connection.prepareStatement(getDrugs)
+        val result = query.executeQuery()
+        while (result.next()) {
+            drugs.add(result.getString(1))
+        }
+        return drugs
+    }
+
+    fun getClientsInfo(search: String, searchBy: String): Pair<Pair<List<Int>, List<String>>, Int> {
         val currentNote = mutableListOf("Клиент", "Питомцы")
+        val clientIds = mutableListOf<Int>()
         var countLines = 1
         val getClients =
-            if (search.isNotEmpty()) "select person.secondName, person.firstName, person.lastName, pet.nickname from person join pet on person.id = pet.ownerId where $searchBy REGEXP '^$search' order by nickname DESC"
-            else "select person.secondName, person.firstName, person.lastName, pet.nickname from person join pet on person.id = pet.ownerId order by nickname DESC"
+            if (search.isNotEmpty()) "select person.secondName, person.firstName, person.lastName, person.id, group_concat(pet.nickname separator ', ') from person join pet on person.id = pet.ownerId group by person.secondName, person.firstName, person.lastName, person.id where $searchBy REGEXP '^$search' order by person.secondName ASC"
+            else "select person.secondName, person.firstName, person.lastName, person.id, group_concat(pet.nickname separator ', ') from person join pet on person.id = pet.ownerId group by person.secondName, person.firstName, person.lastName, person.id order by person.secondName ASC"
         val query = connection.prepareStatement(getClients)
         val outpatient = query.executeQuery()
         while (outpatient.next()) {
@@ -201,8 +385,85 @@ class DataImpl {
                     3
                 )
             )
-            currentNote.add(outpatient.getString(4))
+            currentNote.add(outpatient.getString(5))
+            clientIds.add(outpatient.getInt(4))
         }
-        return Pair(currentNote, countLines)
+        return Pair(Pair(clientIds, currentNote), countLines)
+    }
+
+    fun addCompleted(service: String, drugs: List<String>, amounts: List<String>, visitId: Int) {
+        val setNewCompleted =
+            "insert into completed (service, drugs, amounts, visitId) values ('$service', '$drugs', '$amounts', $visitId);"
+        val setNewCompletedQuery = connection.prepareStatement(setNewCompleted)
+        setNewCompletedQuery.execute()
+    }
+
+    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int) {
+        val editCompleted =
+            "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts' where id = $id"
+        val editCompletedQuery = connection.prepareStatement(editCompleted)
+        editCompletedQuery.execute()
+    }
+
+    fun getPrice(service: List<String>, drugs: List<List<String>>, amounts: List<List<String>>): Int {
+        var price = 0
+        service.forEach {
+            val getPrice =
+                "select price from services where name = '$it'"
+            val getPriceQuery = connection.prepareStatement(getPrice)
+            val result = getPriceQuery.executeQuery()
+            while (result.next()) {
+                price += result.getString(1).toInt()
+            }
+        }
+        drugs.forEachIndexed { index, strings ->
+            strings.forEachIndexed { secondIndex, name ->
+                val getPrice =
+                    "select price from drugs where name = '$name'"
+                val getPriceQuery = connection.prepareStatement(getPrice)
+                val result = getPriceQuery.executeQuery()
+                while (result.next()) {
+                    price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
+                }
+            }
+        }
+        return price
+    }
+
+    fun getCompleted(visitId: Int): Pair<List<String>, Pair<Int, List<Int>>> {
+        val completion = mutableListOf<String>()
+        var countLines = 0
+        val ids = mutableListOf<Int>()
+        val getCompleted =
+            "select service, drugs, amounts, id from completed where visitId = $visitId"
+        val getCompletedQuery = connection.prepareStatement(getCompleted)
+        val result = getCompletedQuery.executeQuery()
+        while (result.next()) {
+            countLines++
+            completion.add(result.getString(1))
+            completion.add(result.getString(2))
+            completion.add(result.getString(3))
+            ids.add(result.getInt(4))
+        }
+        return completion to Pair(countLines, ids)
+    }
+
+    fun parseCompleted(
+        completion: List<String>,
+        count: Int
+    ): Pair<List<String>, Pair<List<List<String>>, List<List<String>>>> {
+        val services = mutableListOf<String>()
+        val drugs = mutableListOf<List<String>>()
+        val amounts = mutableListOf<List<String>>()
+        services.add("Услуга")
+        drugs.add(listOf("Препараты"))
+        amounts.add(listOf("Количество"))
+        for (i in 1..count) {
+            services.add(completion[0 + (i - 1) * 3])
+            drugs.add(completion[1 + (i - 1) * 3].drop(1).dropLast(1).split(", "))
+            amounts.add(completion[2 + (i - 1) * 3].drop(1).dropLast(1).split(", "))
+
+        }
+        return Pair(services, drugs to amounts)
     }
 }

@@ -87,7 +87,10 @@ fun dialog(
                         if (!skipFirstNeg) {
                             skipFirstNeg = true
                         } else {
-
+                            tabState.addTab(Screen.ClientsScreen.name)
+                            tabState.updateActiveTab(Screen.ClientsScreen.name)
+                            navController.navigate(Screen.ClientsScreen.name)
+                            clientsScreenState.updateAddingNewClient(true)
                         }
                     }
                 ) {
@@ -141,31 +144,30 @@ fun markup(
         outpatientScreenState = outpatientScreenState,
         clientsScreenState = clientsScreenState
     )
-    LazyRow(
-        modifier = Modifier
-//            .padding(start = 60.dp)
-            .background(color = Color.Cyan)
-            .fillMaxWidth(1f)
-    ) {
-        item {
-            Text(
-                text = "Амбулаторные приемы",
-                fontSize = 18.sp,
-                color = Color.Black,
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(top = 5.dp, start = 8.dp)
-            )
-        }
-    }
+//    LazyRow(
+//        modifier = Modifier
+////            .padding(start = 60.dp)
+//            .background(color = Color.Cyan)
+//            .fillMaxWidth(1f)
+//    ) {
+//        item {
+//            Text(
+//                text = "Амбулаторные приемы",
+//                fontSize = 18.sp,
+//                color = Color.Black,
+//                fontStyle = FontStyle.Italic,
+//                modifier = Modifier.padding(top = 5.dp, start = 8.dp)
+//            )
+//        }
+//    }
     val textButton = listOf("Начать прием", "Найти")
     val stateHorizontal = rememberScrollState(0)
 //    val scope = CoroutineScope(Dispatchers.Default)
     LazyRow(
         modifier = Modifier
-            .padding(top = 30.dp)
             .background(color = Color.Cyan)
             .fillMaxWidth(1f)
-            .height(100.dp)
+            .height(110.dp)
     ) {
         items(2) {
             Button(
@@ -180,7 +182,7 @@ fun markup(
                     }
                 },
                 modifier = Modifier
-                    .padding(top = 20.dp, end = 8.dp)
+                    .padding(top = 30.dp, end = 8.dp)
             ) {
                 val icon = if (it == 0) Icons.Filled.Add else Icons.Filled.Search
                 Icon(
@@ -203,7 +205,8 @@ fun markup(
 
         val tempPair =
             DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy())
-        val currentNote = tempPair.first
+        val currentNote = tempPair.first.first
+        val clientIds = tempPair.first.second
         val countLines = tempPair.second.first
         val petId = tempPair.second.second
 //        val date = currentNote[5]
@@ -212,7 +215,6 @@ fun markup(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
@@ -235,7 +237,7 @@ fun markup(
                                 .fillMaxHeight()
                                 .clickable {
                                     if (it == 2) {
-                                        shareDataState.updateShareData(petId to currentNote[it + row * 4 - 2])
+                                        shareDataState.updateShareData(petId[row - 1] to currentNote[it + row * 4 - 2])
                                         val info = DataImpl().getInfoByPetId(shareDataState.shareData())
                                         tabState.addTab(Screen.OutpatientCardScreen.name)
                                         tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
@@ -249,13 +251,14 @@ fun markup(
                                         StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
                                     } else {
-                                        val info = DataImpl().getClientInfo(petId)
+                                        val info = DataImpl().getClientInfo(clientIds[row - 1])
                                         StateWrapper().fillClientInfoState(
                                             clientInfoState,
                                             info.first
                                         )
                                         clientInfoState.updateAddInfo(info.first.second)
-                                        clientInfoState.updateCountLines(info.second)
+                                        clientInfoState.updateCountLines(info.second.first)
+                                        clientInfoState.updatePetIds(info.second.second)
                                         tabState.addTab(Screen.ClientInfoScreen.name)
                                         tabState.updateActiveTab(Screen.ClientInfoScreen.name)
                                         navController.navigate(Screen.ClientInfoScreen.name)

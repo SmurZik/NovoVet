@@ -5,7 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import const.Constant
 
-class ClientInfoState {
+class ClientInfoState: State {
+
+
+    private var isSearch by mutableStateOf(false)
+    private var searchText by mutableStateOf(Constant.EMPTY)
+    private var searchBy by mutableStateOf(Constant.SEARCH)
+    private var addText by mutableStateOf(Constant.SURNAME)
 
     private var secondName by mutableStateOf(Constant.EMPTY)
     private var firstName by mutableStateOf(Constant.EMPTY)
@@ -19,9 +25,39 @@ class ClientInfoState {
     private var nickname by mutableStateOf(Constant.EMPTY)
     private var kind by mutableStateOf(Constant.EMPTY)
     private var breed by mutableStateOf(Constant.EMPTY)
+    private var male by mutableStateOf(Constant.EMPTY)
+    private var age by mutableStateOf(Constant.EMPTY)
     private var date by mutableStateOf(Constant.EMPTY)
 
     private var addInfo by mutableStateOf(listOf<String>())
+
+    private var addingNewPet by mutableStateOf(false)
+
+    private var petIds by mutableStateOf(listOf<Int>())
+
+    override fun updateIsSearch(value: Boolean) {
+        isSearch = value
+    }
+
+    override fun getIsSearch(): Boolean = isSearch
+
+    override fun updateSearchText(value: String) {
+        searchText = value
+    }
+
+    override fun searchText(): String = searchText
+
+    override fun updateSearchBy(value: String) {
+        searchBy = value
+    }
+
+    override fun searchBy(): String = searchBy
+
+    override fun updateAddText(value: String) {
+        addText = value
+    }
+
+    override fun addText(): String = addText
 
     fun updateSecondName(value: String) {
         secondName = value
@@ -95,9 +131,33 @@ class ClientInfoState {
 
     fun breed(): String = breed
 
+    fun updateMale(value: String) {
+        male = value
+    }
+
+    fun male(): String = male
+
+    fun updateAge(value: String) {
+        age = value
+    }
+
+    fun age(): String = age
+
     fun updateDate(value: String) {
         date = value
     }
 
     fun date(): String = date
+
+    fun updateAddingNewPet(value: Boolean) {
+        addingNewPet = value
+    }
+
+    fun addingNewPet(): Boolean = addingNewPet
+
+    fun updatePetIds(value: List<Int>) {
+        petIds = value
+    }
+
+    fun petIds(): List<Int> = petIds
 }

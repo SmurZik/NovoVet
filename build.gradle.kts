@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.22"
+    kotlin("jvm") version "1.9.20"
     id("org.jetbrains.compose") version "1.4.1"
 }
 
@@ -27,9 +27,9 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
+//tasks.withType<KotlinCompile> {
+//    kotlinOptions.jvmTarget = "1.9"
+//}
 
 compose.desktop {
     application {
@@ -38,5 +38,5 @@ compose.desktop {
 }
 
 compose {
-    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.4.8")
+    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.5.5")
 }

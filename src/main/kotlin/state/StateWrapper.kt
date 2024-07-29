@@ -55,6 +55,20 @@ class StateWrapper {
         }
     }
 
+    @Composable
+    fun initialServiceState(): ServicesState {
+        return remember {
+            ServicesState()
+        }
+    }
+
+    @Composable
+    fun initialDrugState(): DrugsState {
+        return remember {
+            DrugsState()
+        }
+    }
+
 //    fun clearPetInfoState(state: PetInfoState) {
 //        state.updateAge(Constant.EMPTY)
 //        state.updateNickname(Constant.EMPTY)
