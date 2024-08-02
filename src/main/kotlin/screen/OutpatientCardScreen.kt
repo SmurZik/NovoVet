@@ -15,13 +15,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.DataImpl
+import kotlinx.datetime.toDatePeriod
 import navcontroller.NavController
 import state.*
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 @Composable
 fun buildOutpatientCard(
@@ -127,6 +129,31 @@ fun buildOutpatientCard(
                     )
                 }
             }
+            item {
+                Text(
+                    "Сведения об активных вакцинах:",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(top = 20.dp, start = 8.dp),
+                    textAlign = TextAlign.Center
+                    )
+            }
+            item {
+                Text(
+                    if (illnessHistoryState.vac() != "") illnessHistoryState.vac() else "Пусто",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            if (illnessHistoryState.vac() != "") {
+                item {
+                    Text(
+                        "Дата вакцинирования: ${illnessHistoryState.date().split(" ").first()}",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+                    )
+                }
+                // вакцина не на визит, а на питомца
+            }
         }
         Box(
             modifier = Modifier.fillMaxHeight().width(380.dp)
@@ -179,7 +206,7 @@ fun buildVisitNote(
     var visitDate =
         ""
     if (illnessHistoryState.visit().size > 1 && illnessHistoryState.getIsPattern()) {
-        visitDate = DataImpl().readableDateFormat(visit[11] + " " + visit[12])
+        visitDate = DataImpl().readableDateFormat(visit[14] + " " + visit[15])
         illnessHistoryState.updateDate(visitDate)
     }
     if (!illnessHistoryState.getIsNewVisitInfo()) {
@@ -233,7 +260,12 @@ fun buildVisitNote(
                     StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                     illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
                     illnessHistoryState.updateCompletedIds(listOf())
-                    illnessHistoryState.updateCompletedPair(Pair(listOf("Услуга"), Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))))
+                    illnessHistoryState.updateCompletedPair(
+                        Pair(
+                            listOf("Услуга"),
+                            Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
+                        )
+                    )
                     illnessHistoryState.updateCountLines(0)
                 },
                 modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp).size(32.dp)
@@ -254,21 +286,21 @@ fun buildVisitNote(
                             date = illnessHistoryState.date(),
                             sum = illnessHistoryState.price(),
                             ownerWords = illnessHistoryState.ownerWords(),
-                            commonFeeling = illnessHistoryState.commonFeeling(),
                             temperature = illnessHistoryState.temperature(),
-                            appetite = illnessHistoryState.appetite(),
-                            vomit = illnessHistoryState.vomit(),
-                            defication = illnessHistoryState.defication(),
-                            urination = illnessHistoryState.urination(),
                             extra = illnessHistoryState.extra(),
                             diagnosis = illnessHistoryState.diagnosis(),
                             completed = illnessHistoryState.completed(),
-                            recommendations = illnessHistoryState.recommendations()
+                            recommendations = illnessHistoryState.recommendations(),
+                            illnessHistoryState = illnessHistoryState
                         )
                         val info =
                             DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
                         StateWrapper().fillIllnessHistoryState(illnessHistoryState, info.first.second)
                         illnessHistoryState.updateIsPattern(true)
+                        illnessHistoryState.updateIsNewVisitInfo(false)
+                        illnessHistoryState.completedPair().first.forEach {
+                            if (it.lowercase(Locale.getDefault()).contains("вакцинация")) DataImpl().setVacInfo(it, illnessHistoryState.visitId())
+                        }
                     },
                     modifier = Modifier.padding(top = 16.dp).size(32.dp)
                 ) {
@@ -405,8 +437,10 @@ fun buildExamination(
     visit: List<String>
 ) {
     val labels = listOf(
+        "Врачи на приеме: ",
         "Со слов владельца: ",
         "Общее состояние: ",
+        "Вес",
         "Температура: ",
         "Аппетит: ",
         "Рвота: ",
@@ -460,7 +494,7 @@ fun buildExamination(
                         Column(
                             modifier = Modifier.border(width = 2.dp, color = Color.Black)
                         ) {
-                            for (it in 0..7) {
+                            for (it in 0..9) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(all = 8.dp)
                                 ) {
@@ -469,7 +503,7 @@ fun buildExamination(
                                         fontSize = 18.sp,
                                         modifier = Modifier.width(200.dp)
                                     )
-                                    Text(visit[it], fontSize = 18.sp, modifier = Modifier.padding(start = 50.dp))
+                                    Text(visit[it + 1], fontSize = 18.sp, modifier = Modifier.padding(start = 50.dp))
                                 }
                             }
                         }
@@ -485,7 +519,7 @@ fun buildExamination(
                             modifier = Modifier.fillMaxWidth().border(2.dp, Color.Black)
                         ) {
                             if (it != 1) {
-                                Text(visit[it + 8], fontSize = 18.sp, modifier = Modifier.padding(all = 8.dp))
+                                Text(visit[it + 10], fontSize = 18.sp, modifier = Modifier.padding(all = 8.dp))
                             } else {
                                 Column(
                                     modifier = Modifier.fillMaxWidth()
@@ -495,18 +529,19 @@ fun buildExamination(
                                             modifier = Modifier.padding(vertical = 4.dp)
                                         ) {
                                             Text(
-                                                text = illnessHistoryState.completedPair().first[row-1],
+                                                text = illnessHistoryState.completedPair().first[row - 1],
                                                 fontSize = 18.sp,
                                                 modifier = Modifier.width(400.dp),
                                                 textAlign = TextAlign.Center
                                             )
 
                                             Column(
-                                                modifier = Modifier.width(400.dp).wrapContentWidth(Alignment.CenterHorizontally)
+                                                modifier = Modifier.width(400.dp)
+                                                    .wrapContentWidth(Alignment.CenterHorizontally)
                                             ) {
-                                                for (i in 1..illnessHistoryState.completedPair().second.first[row-1].size) {
+                                                for (i in 1..illnessHistoryState.completedPair().second.first[row - 1].size) {
                                                     Text(
-                                                        text = illnessHistoryState.completedPair().second.first[row-1][i-1],
+                                                        text = illnessHistoryState.completedPair().second.first[row - 1][i - 1],
                                                         fontSize = 18.sp,
                                                         textAlign = TextAlign.Center
                                                     )
@@ -514,11 +549,12 @@ fun buildExamination(
                                             }
 
                                             Column(
-                                                modifier = Modifier.width(400.dp).wrapContentWidth(Alignment.CenterHorizontally)
+                                                modifier = Modifier.width(400.dp)
+                                                    .wrapContentWidth(Alignment.CenterHorizontally)
                                             ) {
-                                                for (i in 1..illnessHistoryState.completedPair().second.second[row-1].size) {
+                                                for (i in 1..illnessHistoryState.completedPair().second.second[row - 1].size) {
                                                     Text(
-                                                        text = illnessHistoryState.completedPair().second.second[row-1][i-1],
+                                                        text = illnessHistoryState.completedPair().second.second[row - 1][i - 1],
                                                         fontSize = 18.sp,
                                                         textAlign = TextAlign.Center
                                                     )
@@ -621,34 +657,29 @@ fun buildExamination(
                     modifier = Modifier.padding(top = 60.dp)
                 ) {
 
-                    items(8) { count ->
+                    items(10) { count ->
                         var currentData = when (count) {
-                            0 -> illnessHistoryState.ownerWords()
-                            1 -> illnessHistoryState.commonFeeling()
-                            2 -> illnessHistoryState.temperature()
-                            3 -> illnessHistoryState.appetite()
-                            4 -> illnessHistoryState.vomit()
-                            5 -> illnessHistoryState.defication()
-                            6 -> illnessHistoryState.urination()
-                            else -> illnessHistoryState.extra()
+                            1 -> illnessHistoryState.ownerWords()
+                            3 -> illnessHistoryState.weight()
+                            4 -> illnessHistoryState.temperature()
+                            9 -> illnessHistoryState.extra()
+                            else -> ""
                         }
 
                         buildOneNote(
                             currentData,
                             onTextChange = {
                                 when (count) {
-                                    0 -> illnessHistoryState.updateOwnerWords(it)
-                                    1 -> illnessHistoryState.updateCommonFeeling(it)
-                                    2 -> illnessHistoryState.updateTemperature(it)
-                                    3 -> illnessHistoryState.updateAppetite(it)
-                                    4 -> illnessHistoryState.updateVomit(it)
-                                    5 -> illnessHistoryState.updateDefication(it)
-                                    6 -> illnessHistoryState.updateUrination(it)
-                                    else -> illnessHistoryState.updateExtra(it)
+                                    1 -> illnessHistoryState.updateOwnerWords(it)
+                                    3 -> illnessHistoryState.updateWeight(it)
+                                    4 -> illnessHistoryState.updateTemperature(it)
+                                    9 -> illnessHistoryState.updateExtra(it)
+                                    else -> illnessHistoryState.updateDrug(it)
                                 }
                             },
                             labels[count],
-                            count
+                            count,
+                            illnessHistoryState
                         )
                     }
                     items(3) { count ->
@@ -677,15 +708,24 @@ fun buildExamination(
                     }
                 }
             } else {
-                illnessHistoryState.updateIsCompleted(true)
-                buildBiggerNote(
-                    illnessHistoryState.completed(),
-                    onTextChange = { illnessHistoryState.updateCompleted(it) },
-                    "Выполнено в клинике: ",
-                    illnessHistoryState.next(),
-                    illnessHistoryState.getIsCompleted(),
-                    illnessHistoryState
-                )
+                Column {
+                    buildOneNote(
+                        text = "",
+                        onTextChange = { illnessHistoryState.updateWeight(it) },
+                        labels[0],
+                        count = 0,
+                        illnessHistoryState
+                    )
+                    illnessHistoryState.updateIsCompleted(true)
+                    buildBiggerNote(
+                        illnessHistoryState.completed(),
+                        onTextChange = { illnessHistoryState.updateCompleted(it) },
+                        "Выполнено в клинике: ",
+                        illnessHistoryState.next(),
+                        illnessHistoryState.getIsCompleted(),
+                        illnessHistoryState
+                    )
+                }
             }
         }
     }
@@ -701,7 +741,7 @@ fun buildBiggerNote(
     illnessHistoryState: IllnessHistoryState
 ) {
     Box(
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = if (next) 50.dp else 8.dp)
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 8.dp)
             .fillMaxWidth()
             .background(color = Color.Cyan, shape = RoundedCornerShape(8.dp))
             .height(if (!isCompleted) 100.dp else 500.dp)
@@ -1077,10 +1117,16 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
 }
 
 @Composable
-fun buildOneNote(text: String, onTextChange: (String) -> (Unit), label: String, count: Int) {
+fun buildOneNote(
+    text: String,
+    onTextChange: (String) -> (Unit),
+    label: String,
+    count: Int,
+    illnessHistoryState: IllnessHistoryState
+) {
     val fontSize = 18
     Row(
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp).fillMaxWidth()
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = if (!illnessHistoryState.next()) 8.dp else 50.dp, bottom = 8.dp).fillMaxWidth()
             .background(color = Color.Cyan, shape = RoundedCornerShape(8.dp))
     ) {
         Text(
@@ -1088,31 +1134,294 @@ fun buildOneNote(text: String, onTextChange: (String) -> (Unit), label: String, 
             fontSize = fontSize.sp,
             modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp).width(250.dp)
         )
-        if (count != 2) {
-            TextField(
-                value = text,
-                onValueChange = { onTextChange(it) },
-                placeholder = { Text("Введите текст здесь") },
-                modifier = Modifier.padding(start = 80.dp).fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0, 255, 210)),
-                textStyle = TextStyle.Default.copy(fontSize = 18.sp),
-                shape = RoundedCornerShape(8.dp)
-            )
-        } else {
-            TextField(
-                value = text,
-                onValueChange = { onTextChange(it) },
-                modifier = Modifier.padding(start = 80.dp).width(100.dp),
-                colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0, 255, 210)),
-                textStyle = TextStyle.Default.copy(fontSize = 18.sp),
-                shape = RoundedCornerShape(8.dp)
-            )
-            Text(
-                "°C",
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
+        when (count) {
+            0 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Мурзина И.В.",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 25.dp),
+                        checked = illnessHistoryState.checked1(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateChecked1(it)
+                        }
+                    )
+                    Text(
+                        "Кленкова С.В.",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 25.dp),
+                        checked = illnessHistoryState.checked2(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateChecked2(it)
+                        }
+                    )
+                    Text(
+                        "Камышенцева С.Вл.",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.checked3(),
+                        modifier = Modifier.padding(end = 25.dp),
+                        onCheckedChange = {
+                            illnessHistoryState.updateChecked3(it)
+                        }
+                    )
+                    Text(
+                        "Францкевич Э.Р.",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 25.dp),
+                        checked = illnessHistoryState.checked4(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateChecked4(it)
+                        }
+                    )
+                }
+            }
+            3 -> {
+                TextField(
+                    value = illnessHistoryState.weight(),
+                    onValueChange = { illnessHistoryState.updateWeight(it) },
+                    modifier = Modifier.padding(start = 80.dp).width(100.dp),
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0, 255, 210)),
+                    textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+            4 -> {
+                TextField(
+                    value = text,
+                    onValueChange = { onTextChange(it) },
+                    modifier = Modifier.padding(start = 80.dp).width(100.dp),
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0, 255, 210)),
+                    textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                Text(
+                    "°C",
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+            }
+            2 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Удовлетворительное",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.feelingNorm(),
+                        enabled = !illnessHistoryState.feelingHard() && !illnessHistoryState.feelingVeryHard(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateFeelingNorm(it)
+                        }
+                    )
+                    Text(
+                        "Тяжелое",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.feelingHard(),
+                        enabled = !illnessHistoryState.feelingNorm() && !illnessHistoryState.feelingVeryHard(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateFeelingHard(it)
+                        }
+                    )
+                    Text(
+                        "Крайне тяжелое",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.feelingVeryHard(),
+                        enabled = !illnessHistoryState.feelingHard() && !illnessHistoryState.feelingNorm(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateFeelingVeryHard(it)
+                        }
+                    )
+                }
+            }
+            5 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Отсутствует",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.appetiteLack(),
+                        enabled = !illnessHistoryState.appetiteSave(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateAppetiteLack(it)
+                        }
+                    )
+                    Text(
+                        "Сохранен",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.appetiteSave(),
+                        enabled = !illnessHistoryState.appetiteLack(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateAppetiteSave(it)
+                        }
+                    )
+                }
+            }
+            6 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Нет",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.vomitNo(),
+                        enabled = !illnessHistoryState.vomitYesOften() && !illnessHistoryState.vomitYesRarely(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateVomitNo(it)
+                        }
+                    )
+                    Text(
+                        "Да (редко)",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.vomitYesRarely(),
+                        enabled = !illnessHistoryState.vomitNo() && !illnessHistoryState.vomitYesOften(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateVomitYesRarely(it)
+                        }
+                    )
+                    Text(
+                        "Да (часто)",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.vomitYesOften(),
+                        enabled = !illnessHistoryState.vomitNo() && !illnessHistoryState.vomitYesRarely(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateVomitYesOften(it)
+                        }
+                    )
+                }
+            }
+            7 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Нормальная",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.deficationNorm(),
+                        enabled = !illnessHistoryState.deficationOften() && !illnessHistoryState.deficationRarely(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateDeficationNorm(it)
+                        }
+                    )
+                    Text(
+                        "Неоформленная (редко)",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.deficationRarely(),
+                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationOften(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateDeficationRarely(it)
+                        }
+                    )
+                    Text(
+                        "Неоформленная (часто)",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.deficationOften(),
+                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationRarely(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateDeficationOften(it)
+                        }
+                    )
+                }
+            }
+            8 -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 80.dp)
+                ) {
+                    Text(
+                        "Нормальное",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.urinationNorm(),
+                        enabled = !illnessHistoryState.urinationLack() && !illnessHistoryState.urinationOften(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateUrinationNorm(it)
+                        }
+                    )
+                    Text(
+                        "Отсутствует",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.urinationLack(),
+                        enabled = !illnessHistoryState.urinationNorm() && !illnessHistoryState.urinationOften(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateUrinationLack(it)
+                        }
+                    )
+                    Text(
+                        "Учащенное",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.urinationOften(),
+                        enabled = !illnessHistoryState.urinationNorm() && !illnessHistoryState.urinationLack(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateUrinationOften(it)
+                        }
+                    )
+                }
+            }
+            else -> {
+                TextField(
+                    value = text,
+                    onValueChange = { onTextChange(it) },
+                    placeholder = { Text("Введите текст здесь") },
+                    modifier = Modifier.padding(start = 80.dp).fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0, 255, 210)),
+                    textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
         }
     }
 }

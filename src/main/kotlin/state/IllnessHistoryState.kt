@@ -61,6 +61,154 @@ class IllnessHistoryState {
 
     private var currentIndex by mutableStateOf(0)
 
+    private var checked1 by mutableStateOf(false)
+    private var checked2 by mutableStateOf(false)
+    private var checked3 by mutableStateOf(false)
+    private var checked4 by mutableStateOf(false)
+
+    private var feelingNorm by mutableStateOf(false)
+    private var feelingHard by mutableStateOf(false)
+    private var feelingVeryHard by mutableStateOf(false)
+
+    private var appetiteLack by mutableStateOf(false)
+    private var appetiteSave by mutableStateOf(false)
+
+    private var vomitNo by mutableStateOf(false)
+    private var vomitYesRarely by mutableStateOf(false)
+    private var vomitYesOften by mutableStateOf(false)
+
+    private var deficationNorm by mutableStateOf(false)
+    private var deficationRarely by mutableStateOf(false)
+    private var deficationOften by mutableStateOf(false)
+
+    private var urinationNorm by mutableStateOf(false)
+    private var urinationLack by mutableStateOf(false)
+    private var urinationOften by mutableStateOf(false)
+
+    private var vac by mutableStateOf(Constant.EMPTY)
+
+    private var weight by mutableStateOf(Constant.EMPTY)
+
+    fun updateVac(value: String) {
+        vac = value
+    }
+
+    fun vac(): String = vac
+
+    fun updateWeight(value: String) {
+        weight = value
+    }
+
+    fun weight(): String = weight
+
+    fun updateUrinationNorm(value: Boolean) {
+        urinationNorm = value
+    }
+
+    fun urinationNorm(): Boolean = urinationNorm
+
+    fun updateUrinationLack(value: Boolean) {
+        urinationLack = value
+    }
+
+    fun urinationLack(): Boolean = urinationLack
+
+    fun updateUrinationOften(value: Boolean) {
+        urinationOften = value
+    }
+
+    fun urinationOften(): Boolean = urinationOften
+
+    fun updateDeficationNorm(value: Boolean) {
+        deficationNorm = value
+    }
+
+    fun deficationNorm(): Boolean = deficationNorm
+
+    fun updateDeficationRarely(value: Boolean) {
+        deficationRarely = value
+    }
+
+    fun deficationRarely(): Boolean = deficationRarely
+
+    fun updateDeficationOften(value: Boolean) {
+        deficationOften = value
+    }
+
+    fun deficationOften(): Boolean = deficationOften
+
+    fun updateVomitNo(value: Boolean) {
+        vomitNo = value
+    }
+
+    fun vomitNo(): Boolean = vomitNo
+
+    fun updateVomitYesRarely(value: Boolean) {
+        vomitYesRarely = value
+    }
+
+    fun vomitYesRarely(): Boolean = vomitYesRarely
+
+    fun updateVomitYesOften(value: Boolean) {
+        vomitYesOften = value
+    }
+
+    fun vomitYesOften(): Boolean = vomitYesOften
+
+    fun updateAppetiteLack(value: Boolean) {
+        appetiteLack = value
+    }
+
+    fun appetiteLack(): Boolean = appetiteLack
+
+    fun updateAppetiteSave(value: Boolean) {
+        appetiteSave = value
+    }
+
+    fun appetiteSave(): Boolean = appetiteSave
+
+    fun updateFeelingNorm(value: Boolean) {
+        feelingNorm = value
+    }
+
+    fun feelingNorm(): Boolean = feelingNorm
+
+    fun updateFeelingHard(value: Boolean) {
+        feelingHard = value
+    }
+
+    fun feelingHard(): Boolean = feelingHard
+
+    fun updateFeelingVeryHard(value: Boolean) {
+        feelingVeryHard = value
+    }
+
+    fun feelingVeryHard(): Boolean = feelingVeryHard
+
+    fun updateChecked1(value: Boolean) {
+        checked1 = value
+    }
+
+    fun checked1(): Boolean = checked1
+
+    fun updateChecked2(value: Boolean) {
+        checked2 = value
+    }
+
+    fun checked2(): Boolean = checked2
+
+    fun updateChecked3(value: Boolean) {
+        checked3 = value
+    }
+
+    fun checked3(): Boolean = checked3
+
+    fun updateChecked4(value: Boolean) {
+        checked4 = value
+    }
+
+    fun checked4(): Boolean = checked4
+
     fun updatePrice(value: Int) {
         price = value
     }

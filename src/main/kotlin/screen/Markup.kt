@@ -244,6 +244,7 @@ fun markup(
                                         navController.navigate(Screen.OutpatientCardScreen.name)
                                         tabState.updateNicknameTab(temp)
                                         illnessHistoryState.updateVisit(info.first.second)
+                                        illnessHistoryState.updateVac(info.first.second.last())
                                         illnessHistoryState.updateNote(info.first.first)
                                         illnessHistoryState.updateId(info.second.first)
                                         illnessHistoryState.updateVisitId(info.second.second)

@@ -97,22 +97,77 @@ class StateWrapper {
         state.updateDiagnosis(Constant.EMPTY)
         state.updateCompleted(Constant.EMPTY)
         state.updateRecommendations(Constant.EMPTY)
+        state.updateWeight(Constant.EMPTY)
         state.updateIsPattern(false)
     }
 
     fun fillIllnessHistoryState(state: IllnessHistoryState, visit: List<String>) {
-        state.updateOwnerWords(visit[0])
-        state.updateCommonFeeling(visit[1])
-        state.updateTemperature(visit[2])
-        state.updateAppetite(visit[3])
-        state.updateVomit(visit[4])
-        state.updateDefication(visit[5])
-        state.updateUrination(visit[6])
-        state.updateExtra(visit[7])
-        state.updateDiagnosis(visit[8])
-        state.updateCompleted(visit[9])
-        state.updateRecommendations(visit[10])
+        state.updatePrice(visit[0].toInt())
+        state.updateOwnerWords(visit[2])
+        when (visit[3]) {
+            "Удовлетворительное" -> {
+                state.updateFeelingNorm(true)
+            }
+            "Тяжелое" -> {
+                state.updateFeelingHard(true)
+            }
+            "Крайне тяжелое" -> {
+                state.updateFeelingVeryHard(true)
+            }
+        }
+        state.updateTemperature(visit[5])
+        when (visit[6]) {
+            "Сохранен" -> {
+                state.updateAppetiteSave(true)
+            }
+            "Отсутствует" -> {
+                state.updateAppetiteLack(true)
+            }
+        }
+        when (visit[7]) {
+            "Нет" -> {
+                state.updateVomitNo(true)
+            }
+            "Да (редко)" -> {
+                state.updateVomitYesRarely(true)
+            }
+            "Да (часто)" -> {
+                state.updateVomitYesOften(true)
+            }
+        }
+        when (visit[8]) {
+            "Нормальная" -> {
+                state.updateDeficationNorm(true)
+            }
+            "Неоформленная (редко)" -> {
+                state.updateDeficationRarely(true)
+            }
+            "Неоформленная (часто)" -> {
+                state.updateDeficationOften(true)
+            }
+        }
+        when (visit[9]) {
+            "Нормальное" -> {
+                state.updateUrinationNorm(true)
+            }
+            "Отсутствует" -> {
+                state.updateUrinationLack(true)
+            }
+            "Учащенное" -> {
+                state.updateUrinationOften(true)
+            }
+        }
+        state.updateExtra(visit[10])
+        state.updateDiagnosis(visit[11])
+        state.updateCompleted(visit[12])
+        state.updateRecommendations(visit[13])
+        if (visit[1].contains("Мурзина")) state.updateChecked1(true)
+        if (visit[1].contains("Кленкова")) state.updateChecked2(true)
+        if (visit[1].contains("Камышенцева")) state.updateChecked3(true)
+        if (visit[1].contains("Францкевич")) state.updateChecked4(true)
+        state.updateWeight(visit[4])
         state.updateVisit(visit)
+        state.updateVac(visit[16])
 
 //        state.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
     }

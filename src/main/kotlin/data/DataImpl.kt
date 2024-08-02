@@ -1,5 +1,6 @@
 package data
 
+import state.IllnessHistoryState
 import java.sql.Connection
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
@@ -140,9 +141,11 @@ class DataImpl {
         var visitId = 0
         while (resultVisit.next()) {
             visitId = resultVisit.getInt(1)
-//            visit.add(resultVisit.getDouble(4).toString())
+            visit.add(resultVisit.getString(4))
+            visit.add(resultVisit.getString(16))
             visit.add(resultVisit.getString(5))
             visit.add(resultVisit.getString(6))
+            visit.add(resultVisit.getString(17))
             visit.add(resultVisit.getString(7))
             visit.add(resultVisit.getString(8))
             visit.add(resultVisit.getString(9))
@@ -156,6 +159,7 @@ class DataImpl {
             val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
             visit.add(formatForDateNow.format(tempDate))
             visit.add(resultVisit.getTime(3).toString())
+            visit.add(resultVisit.getString(18))
         }
         return Pair(Pair(note, visit), data.first to visitId)
     }
@@ -207,6 +211,16 @@ class DataImpl {
         setClientInfoQuery.execute()
     }
 
+    fun setVacInfo(
+        info: String,
+        visitId: Int
+    ) {
+        val setVacInfo =
+            "update visit set vac = '$info' where id = $visitId"
+        val setVacInfoQuery = connection.prepareStatement(setVacInfo)
+        setVacInfoQuery.execute()
+    }
+
     fun setVisitInfo(
         id: Int,
         isNew: Boolean,
@@ -214,28 +228,56 @@ class DataImpl {
         date: String,
         sum: Int,
         ownerWords: String,
-        commonFeeling: String,
         temperature: String,
-        appetite: String,
-        vomit: String,
-        defication: String,
-        urination: String,
         extra: String,
         diagnosis: String,
         completed: String,
-        recommendations: String
+        recommendations: String,
+        illnessHistoryState: IllnessHistoryState
     ) {
         val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm")
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
         val formattedDate = dateFormat.format(formatDate.parse(date))
+        var doctors = ""
+        if (illnessHistoryState.checked1()) doctors += "Мурзина И.В."
+        if (illnessHistoryState.checked1() && (illnessHistoryState.checked2() || illnessHistoryState.checked3() || illnessHistoryState.checked4())) doctors += ", "
+        if (illnessHistoryState.checked2()) doctors += "Кленкова С.В."
+        if (illnessHistoryState.checked2() && (illnessHistoryState.checked3() || illnessHistoryState.checked4())) doctors += ", "
+        if (illnessHistoryState.checked3()) doctors += "Камышенцева С.Вл."
+        if (illnessHistoryState.checked4() && illnessHistoryState.checked3()) doctors += ", "
+        if (illnessHistoryState.checked4()) doctors += "Францкевич Э.Р."
+        val commonFeeling =
+            if (illnessHistoryState.feelingNorm()) "Удовлетворительное"
+            else if (illnessHistoryState.feelingHard()) "Тяжелое"
+            else if (illnessHistoryState.feelingVeryHard()) "Крайне тяжелое"
+            else ""
+        val appetite =
+            if (illnessHistoryState.appetiteSave()) "Сохранен"
+            else if (illnessHistoryState.appetiteLack()) "Отсутствует"
+            else ""
+        val vomit =
+            if (illnessHistoryState.vomitNo()) "Нет"
+            else if (illnessHistoryState.vomitYesRarely()) "Да (редко)"
+            else if (illnessHistoryState.vomitYesOften()) "Да (часто)"
+            else ""
+        val defication =
+            if (illnessHistoryState.deficationNorm()) "Нормальная"
+            else if (illnessHistoryState.deficationRarely()) "Неоформленная (редко)"
+            else if (illnessHistoryState.deficationOften()) "Неоформленная (часто)"
+            else ""
+        val urination =
+            if (illnessHistoryState.urinationNorm()) "Нормальное"
+            else if (illnessHistoryState.urinationLack()) "Отсутствует"
+            else if (illnessHistoryState.urinationOften()) "Учащенное"
+            else ""
         if (isNew) {
             val setNewVisit =
-                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations');"
+                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()});"
             val setVisitQuery = connection.prepareStatement(setNewVisit)
             setVisitQuery.execute()
         } else {
             val updateVisit =
-                "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations'  where id = $id;"
+                "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations', doctors = '$doctors', weight = '${illnessHistoryState.weight()}'  where id = $id;"
             val setVisitQuery = connection.prepareStatement(updateVisit)
             setVisitQuery.execute()
         }
