@@ -5,23 +5,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import components.DatePicker
 import components.search
 import data.DataImpl
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -192,7 +199,62 @@ fun markup(
                 Text(textButton[it], modifier = Modifier.padding(8.dp))
             }
         }
+        val dateString = "01.01.1999"
+        val formatDate = SimpleDateFormat("dd.MM.yyyy")
+        val formattedDate = formatDate.parse(dateString)
+        item {
+            Text(
+                text = if (outpatientScreenState.dateResult() == formattedDate) "Показаны последние 100 приемов"
+                else "Показаны приемы за " + formatDate.format(outpatientScreenState.dateResult()),
+                fontSize = 20.sp,
+                modifier = Modifier.padding(top = 40.dp, start = 300.dp)
+            )
+        }
+        if (outpatientScreenState.dateResult() != formattedDate) {
+            item {
+                IconButton(
+                    onClick = {
+                        outpatientScreenState.updateDateResult(formattedDate)
+                    },
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        "close"
+                    )
+                }
+            }
+        }
+        item {
+            IconButton(
+                modifier = Modifier.padding(start = 300.dp, top = 30.dp),
+                onClick = {
+                    outpatientScreenState.updateOpenDialog(true)
+                }
+            ) {
+                Icon(
+                    painter = painterResource("/calendar.png"),
+                    contentDescription = "calendar",
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
     }
+
+    if (outpatientScreenState.openDialog()) {
+
+        //implement here the logic to show datepicker and use de return value
+
+        DatePicker(
+            initDate = Date(),
+            onDismissRequest = { outpatientScreenState.updateOpenDialog(false) },
+            onDateSelect = {
+                outpatientScreenState.updateDateResult(it)
+                outpatientScreenState.updateOpenDialog(false)
+            }
+        )
+    }
+
     var expanded by remember { mutableStateOf(false) }
     if (outpatientScreenState.getIsSearch()) {
         search(outpatientScreenState, expanded, onExpandedChange = { expanded = it })
@@ -204,7 +266,7 @@ fun markup(
     ) {
 
         val tempPair =
-            DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy())
+            DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy(), outpatientScreenState.dateResult())
         val currentNote = tempPair.first.first
         val clientIds = tempPair.first.second
         val countLines = tempPair.second.first
@@ -244,13 +306,17 @@ fun markup(
                                         navController.navigate(Screen.OutpatientCardScreen.name)
                                         tabState.updateNicknameTab(temp)
                                         illnessHistoryState.updateVisit(info.first.second)
-                                        illnessHistoryState.updateVac(info.first.second.last())
                                         illnessHistoryState.updateNote(info.first.first)
                                         illnessHistoryState.updateId(info.second.first)
                                         illnessHistoryState.updateVisitId(info.second.second)
                                         illnessHistoryState.updateIsPattern(true)
                                         StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
+                                        val infoClient = DataImpl().getClientInfo(clientIds[row - 1])
+                                        StateWrapper().fillClientInfoState(
+                                            clientInfoState,
+                                            infoClient.first
+                                        )
                                     } else {
                                         val info = DataImpl().getClientInfo(clientIds[row - 1])
                                         StateWrapper().fillClientInfoState(

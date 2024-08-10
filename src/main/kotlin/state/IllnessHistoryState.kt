@@ -59,6 +59,8 @@ class IllnessHistoryState {
 
     private var amounts by mutableStateOf(listOf(Constant.EMPTY))
 
+    private var measures by mutableStateOf(listOf(Constant.EMPTY))
+
     private var currentIndex by mutableStateOf(0)
 
     private var checked1 by mutableStateOf(false)
@@ -85,15 +87,56 @@ class IllnessHistoryState {
     private var urinationLack by mutableStateOf(false)
     private var urinationOften by mutableStateOf(false)
 
-    private var vac by mutableStateOf(Constant.EMPTY)
+    private var servicePrice by mutableStateOf(Constant.EMPTY)
 
     private var weight by mutableStateOf(Constant.EMPTY)
+    private var writingPrice by mutableStateOf(false)
+    private var rangeServicePrice by mutableStateOf(Constant.EMPTY)
+    private var priceTemplate by mutableStateOf(Constant.EMPTY)
 
-    fun updateVac(value: String) {
-        vac = value
+    private var priceList by mutableStateOf(mutableListOf<String>())
+
+    private var measureComplex by mutableStateOf(mutableListOf<MutableList<String>>())
+
+    fun fillMeasureComplex(value: MutableList<MutableList<String>>) {
+        measureComplex = value
     }
 
-    fun vac(): String = vac
+    fun measureComplex(): MutableList<MutableList<String>> = measureComplex
+
+    fun addPrice(value: String) {
+        priceList.add(value)
+    }
+
+    fun updatePriceList(value: MutableList<String>) {
+        priceList = value
+    }
+
+    fun priceList(): List<String> = priceList
+
+    fun updatePriceTemplate(value: String) {
+        priceTemplate = value
+    }
+
+    fun priceTemplate(): String = priceTemplate
+
+    fun updateRangeServicePrice(value: String) {
+        rangeServicePrice = value
+    }
+
+    fun rangeServicePrice(): String = rangeServicePrice
+
+    fun updateWritingPrice(value: Boolean) {
+        writingPrice = value
+    }
+
+    fun writingPrice(): Boolean = writingPrice
+
+    fun updateServicePrice(value: String) {
+        servicePrice = value
+    }
+
+    fun servicePrice(): String = servicePrice
 
     fun updateWeight(value: String) {
         weight = value
@@ -258,6 +301,22 @@ class IllnessHistoryState {
         temp[index] = value
         amounts = temp
     }
+
+    fun updateMeasures(value: String) {
+        measures += value
+    }
+
+    fun clearMeasures(value: List<String>) {
+        measures = value
+    }
+
+    fun updateSelectedMeasure(value: String, index: Int) {
+        val temp = measures.toMutableList()
+        temp[index] = value
+        measures = temp
+    }
+
+    fun measures(): List<String> = measures
 
     fun amounts(): List<String> = amounts
 

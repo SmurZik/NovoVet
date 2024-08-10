@@ -2,6 +2,7 @@ package data
 
 import state.IllnessHistoryState
 import java.sql.Connection
+import java.sql.Date
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
 import kotlin.math.ceil
@@ -10,31 +11,84 @@ class DataImpl {
     private val connection: Connection =
         DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
 
-    fun getOutpatientCard(search: String, searchBy: String): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
+    fun getOutpatientCard(search: String, searchBy: String, date: java.util.Date): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
         val clientIds = mutableListOf<Int>()
         var countLines = 1
+        val dateString = "01.01.1999"
+        val formatDate = SimpleDateFormat("dd.MM.yyyy")
+        val formattedDate = formatDate.parse(dateString)
         val petIds = mutableListOf<Int>()
         val getOutpatient =
             if (search.isNotEmpty()) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where $searchBy REGEXP '^$search' order by date DESC"
-            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC"
+            else if (date != formattedDate) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC"
+            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC limit 5"
         val query = connection.prepareStatement(getOutpatient)
         val outpatient = query.executeQuery()
         val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
         while (outpatient.next()) {
-            countLines++
-            currentNote.add(formatForDateNow.format(outpatient.getDate(1)) + " " + outpatient.getTime(1).toString())
-            currentNote.add(
-                outpatient.getString(2) + " " + outpatient.getString(3) + " " + outpatient.getString(
-                    4
+            if (date != formattedDate && formatForDateNow.format(date) == formatForDateNow.format(outpatient.getDate(1))) {
+                countLines++
+                currentNote.add(formatForDateNow.format(outpatient.getDate(1)) + " " + outpatient.getTime(1).toString())
+                currentNote.add(
+                    outpatient.getString(2) + " " + outpatient.getString(3) + " " + outpatient.getString(
+                        4
+                    )
                 )
-            )
-            currentNote.add(outpatient.getString(5))
-            currentNote.add(outpatient.getString(6))
-            petIds.add(outpatient.getInt(7))
-            clientIds.add(outpatient.getInt(8))
+                currentNote.add(outpatient.getString(5))
+                currentNote.add(outpatient.getString(6))
+                petIds.add(outpatient.getInt(7))
+                clientIds.add(outpatient.getInt(8))
+            } else if (date == formattedDate) {
+                countLines++
+                currentNote.add(formatForDateNow.format(outpatient.getDate(1)) + " " + outpatient.getTime(1).toString())
+                currentNote.add(
+                    outpatient.getString(2) + " " + outpatient.getString(3) + " " + outpatient.getString(
+                        4
+                    )
+                )
+                currentNote.add(outpatient.getString(5))
+                currentNote.add(outpatient.getString(6))
+                petIds.add(outpatient.getInt(7))
+                clientIds.add(outpatient.getInt(8))
+            }
         }
         return Pair(Pair(currentNote, clientIds), Pair(countLines, petIds))
+    }
+
+    fun getVaccineJournal(search: String, searchBy: String, date: java.util.Date): Pair<List<String>, Pair<Int, List<Int>>> {
+        val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Название вакцины")
+        var countLines = 1
+        val visitIds = mutableListOf<Int>()
+        val dateString = "01.01.1999"
+        val formatDate = SimpleDateFormat("dd.MM.yyyy")
+        val formattedDate = formatDate.parse(dateString)
+        val toSearch = if (searchBy == "secondName" || searchBy == "firstName") "client" else "pet"
+        val getVaccine =
+            if (search.isNotEmpty()) "select date, client, pet, vac, visitId from vaccine where $toSearch REGEXP '$search' order by date DESC"
+            else if (date != formattedDate) "select date, client, pet, vac, visitId from vaccine order by date DESC"
+            else "select date, client, pet, vac, visitId from vaccine order by date DESC limit 5"
+        val query = connection.prepareStatement(getVaccine)
+        val vaccine = query.executeQuery()
+        val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
+        while (vaccine.next()) {
+            if (date != formattedDate && formatForDateNow.format(date) == formatForDateNow.format(vaccine.getDate(1))) {
+                countLines++
+                currentNote.add(formatForDateNow.format(vaccine.getDate(1)) + " " + vaccine.getTime(1).toString())
+                currentNote.add(vaccine.getString(2))
+                currentNote.add(vaccine.getString(3))
+                currentNote.add(vaccine.getString(4))
+                visitIds.add(vaccine.getInt(5))
+            } else if (date == formattedDate) {
+                countLines++
+                currentNote.add(formatForDateNow.format(vaccine.getDate(1)) + " " + vaccine.getTime(1).toString())
+                currentNote.add(vaccine.getString(2))
+                currentNote.add(vaccine.getString(3))
+                currentNote.add(vaccine.getString(4))
+                visitIds.add(vaccine.getInt(5))
+            }
+        }
+        return Pair(currentNote, Pair(countLines, visitIds))
     }
 
     fun updatePrice(price: Int, visitId: Int) {
@@ -120,7 +174,7 @@ class DataImpl {
 
     fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
         if (data.first == 0) return Pair(Pair(listOf(), listOf()), 0 to 0)
-        val searchByNickname = "select nickname, kind, breed, male, age from pet where id = ${data.first}"
+        val searchByNickname = "select nickname, kind, breed, male, age, vac, vacDate from pet where id = ${data.first}"
         val searchByNicknameQuery = connection.prepareStatement(searchByNickname)
         val result = searchByNicknameQuery.executeQuery()
         val note = mutableListOf<String>()
@@ -131,6 +185,8 @@ class DataImpl {
             note.add(result.getString(3))
             note.add(result.getString(4))
             note.add(result.getString(5))
+            note.add(result.getString(6))
+            note.add(result.getString(7))
         }
         val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm")
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
@@ -159,7 +215,6 @@ class DataImpl {
             val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
             visit.add(formatForDateNow.format(tempDate))
             visit.add(resultVisit.getTime(3).toString())
-            visit.add(resultVisit.getString(18))
         }
         return Pair(Pair(note, visit), data.first to visitId)
     }
@@ -213,12 +268,53 @@ class DataImpl {
 
     fun setVacInfo(
         info: String,
+        petId: Int,
+        date: String,
+        client: String,
+        pet: String,
         visitId: Int
     ) {
+        val day = date.split(" ").first()
+        var dateBefore = ""
+        val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
+        val formattedDate = dateFormat.format(formatDate.parse(date))
+        val getDay =
+            "select vacDate from pet where id = $petId"
+        val getDayQuery = connection.prepareStatement(getDay)
+        val result = getDayQuery.executeQuery()
+        while (result.next()) {
+            dateBefore = result.getString(1)
+        }
         val setVacInfo =
-            "update visit set vac = '$info' where id = $visitId"
+            "update pet set vac = '$info', vacDate = '$day' where id = $petId"
         val setVacInfoQuery = connection.prepareStatement(setVacInfo)
-        setVacInfoQuery.execute()
+        if (dateBefore != "") {
+            val dateFormat1 = SimpleDateFormat("dd.MM.yyyy").parse(day)
+            val dateBeforeFormat = SimpleDateFormat("dd.MM.yyyy").parse(dateBefore)
+            if (dateFormat1.before(dateBeforeFormat)) {
+                val setNewVaccine =
+                    "INSERT INTO vaccine (date, client, pet, vac, visitId) VALUES ('$formattedDate', '$client', '$pet', '$info', $visitId);"
+                connection.prepareStatement(setNewVaccine).execute()
+            }
+            if (dateFormat1.after(dateBeforeFormat) || dateFormat1.equals(dateBeforeFormat)) {
+                setVacInfoQuery.execute()
+                if (dateFormat1.equals(dateBeforeFormat)) {
+                    val updateVaccine =
+                        "update vaccine set date = '$formattedDate', client = '$client', pet = '$pet', vac = '$info' where visitId = $visitId"
+                    connection.prepareStatement(updateVaccine).execute()
+                } else {
+                    val setNewVaccine =
+                        "INSERT INTO vaccine (date, client, pet, vac, visitId) VALUES ('$formattedDate', '$client', '$pet', '$info', $visitId);"
+                    connection.prepareStatement(setNewVaccine).execute()
+                }
+            }
+        } else {
+            setVacInfoQuery.execute()
+            val setNewVaccine =
+                "INSERT INTO vaccine (date, client, pet, vac, visitId) VALUES ('$formattedDate', '$client', '$pet', '$info', $visitId);"
+            connection.prepareStatement(setNewVaccine).execute()
+        }
     }
 
     fun setVisitInfo(
@@ -272,7 +368,7 @@ class DataImpl {
             else ""
         if (isNew) {
             val setNewVisit =
-                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()});"
+                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()}');"
             val setVisitQuery = connection.prepareStatement(setNewVisit)
             setVisitQuery.execute()
         } else {
@@ -298,7 +394,7 @@ class DataImpl {
         clientId: Int
     ) {
         val setNewPet =
-            "INSERT INTO pet (nickname, kind, breed, male, age, ownerId) VALUES ('$nickname', '$kind', '$breed', '$male', '$age', '$clientId');"
+            "INSERT INTO pet (nickname, kind, breed, male, age, ownerId, vac, vacDate) VALUES ('$nickname', '$kind', '$breed', '$male', '$age', '$clientId', '', '');"
         val setNewClientQuery = connection.prepareStatement(setNewPet)
         setNewClientQuery.execute()
     }
@@ -343,16 +439,17 @@ class DataImpl {
     }
 
     fun getDrugs(): Pair<List<String>, Pair<Int, List<Int>>> {
-        val currentNote = mutableListOf("Название препарата", "Стоимость (мл)")
+        val currentNote = mutableListOf("Название препарата", "Единицы измерения", "Стоимость")
         val drugIds = mutableListOf<Int>()
         var countLines = 1
         val getDrugs =
-            "SELECT name, price, id from drugs order by name ASC;"
+            "SELECT name, price, id, measure from drugs order by name ASC;"
         val query = connection.prepareStatement(getDrugs)
         val result = query.executeQuery()
         while (result.next()) {
             countLines++
             currentNote.add(result.getString(1))
+            currentNote.add(result.getString(4))
             currentNote.add(result.getString(2))
             drugIds.add(result.getInt(3))
         }
@@ -366,9 +463,9 @@ class DataImpl {
         setNewServiceQuery.execute()
     }
 
-    fun addDrug(name: String, price: String) {
+    fun addDrug(name: String, price: String, measure: String) {
         val setNewDrug =
-            "insert into drugs (name, price) values ('$name', '$price');"
+            "insert into drugs (name, price, measure) values ('$name', '$price', '$measure');"
         val setNewDrugQuery = connection.prepareStatement(setNewDrug)
         setNewDrugQuery.execute()
     }
@@ -380,11 +477,23 @@ class DataImpl {
         editServiceQuery.execute()
     }
 
-    fun editDrug(name: String, price: String, id: Int) {
+    fun editDrug(name: String, price: String, measure: String, id: Int) {
         val editDrug =
-            "update drugs set name = '$name', price = '$price' where id = $id"
+            "update drugs set name = '$name', price = '$price', measure = '$measure' where id = $id"
         val editDrugQuery = connection.prepareStatement(editDrug)
         editDrugQuery.execute()
+    }
+
+    fun getMeasure(name: String): String {
+        var measure = ""
+        val getMeasure =
+            "select measure from drugs where name = '$name'"
+        val query = connection.prepareStatement(getMeasure)
+        val result = query.executeQuery()
+        while (result.next()) {
+            measure = result.getString(1)
+        }
+        return measure
     }
 
     fun getServiceByFirstLetter(name: String): List<String> {
@@ -433,29 +542,45 @@ class DataImpl {
         return Pair(Pair(clientIds, currentNote), countLines)
     }
 
-    fun addCompleted(service: String, drugs: List<String>, amounts: List<String>, visitId: Int) {
+    fun addCompleted(service: String, drugs: List<String>, amounts: List<String>, visitId: Int, servicePrice: String) {
         val setNewCompleted =
-            "insert into completed (service, drugs, amounts, visitId) values ('$service', '$drugs', '$amounts', $visitId);"
+            "insert into completed (service, drugs, amounts, visitId, servicePrice) values ('$service', '$drugs', '$amounts', $visitId, '$servicePrice');"
         val setNewCompletedQuery = connection.prepareStatement(setNewCompleted)
         setNewCompletedQuery.execute()
     }
 
-    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int) {
+    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int, servicePrice:String) {
         val editCompleted =
-            "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts' where id = $id"
+            "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts', servicePrice = '$servicePrice' where id = $id"
         val editCompletedQuery = connection.prepareStatement(editCompleted)
         editCompletedQuery.execute()
     }
 
-    fun getPrice(service: List<String>, drugs: List<List<String>>, amounts: List<List<String>>): Int {
+    fun getRealServicePrice(service: String, visitId: Int): String {
+        var price = ""
+        val getPrice =
+            "select servicePrice from completed where service = '$service' and visitId = $visitId"
+        val getPriceQuery = connection.prepareStatement(getPrice)
+        val result = getPriceQuery.executeQuery()
+        while (result.next()) {
+            price = result.getString(1)
+        }
+        return price
+    }
+
+    fun getPrice(service: List<String>, drugs: List<List<String>>, amounts: List<List<String>>, visitId: Int): Int {
         var price = 0
         service.forEach {
-            val getPrice =
-                "select price from services where name = '$it'"
-            val getPriceQuery = connection.prepareStatement(getPrice)
-            val result = getPriceQuery.executeQuery()
-            while (result.next()) {
-                price += result.getString(1).toInt()
+            if (it != "Услуга") {
+                val getPrice =
+                    "select servicePrice from completed where service = '$it' and visitId = $visitId"
+                val getPriceQuery = connection.prepareStatement(getPrice)
+                val result = getPriceQuery.executeQuery()
+                while (result.next()) {
+                    if (result.getString(1) != "") {
+                        price += result.getString(1).toInt()
+                    }
+                }
             }
         }
         drugs.forEachIndexed { index, strings ->
@@ -468,6 +593,18 @@ class DataImpl {
                     price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
                 }
             }
+        }
+        return price
+    }
+
+    fun getServicePrice(service: String): String {
+        var price = ""
+        val getServicePrice =
+            "select price from services where name = '$service'"
+        val getServicePriceQuery = connection.prepareStatement(getServicePrice)
+        val result = getServicePriceQuery.executeQuery()
+        while (result.next()) {
+            price = result.getString(1)
         }
         return price
     }

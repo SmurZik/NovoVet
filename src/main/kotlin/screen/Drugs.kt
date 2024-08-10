@@ -74,7 +74,7 @@ fun buildDrugs(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .width(1350.dp)
+                        .width(1480.dp)
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
@@ -86,22 +86,24 @@ fun buildDrugs(
                         ),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    for (it in 0..1) {
+                    for (it in 0..2) {
                         Text(
-                            text = currentNote[it + row * 2],
+                            text = currentNote[it + row * 3],
                             modifier = if (it != 0 || row == 0) Modifier
                                 .padding(13.dp)
-                                .width(if (it == 0) 1000.dp else 300.dp)
+                                .width(if (it == 0) 800.dp else 300.dp)
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
                                     drugsState.updateEditingDrug(true)
                                     drugsState.updateId(serviceIds[row - 1])
-                                    drugsState.updateName(currentNote[row * 2])
-                                    drugsState.updatePrice(currentNote[row * 2 + 1])
+                                    drugsState.updateName(currentNote[row * 3])
+                                    drugsState.updateMeasure(currentNote[row * 3 + 1])
+                                    drugsState.updatePrice(currentNote[row * 3 + 2])
+
                                 }
                                 .padding(13.dp)
-                                .width(1000.dp),
+                                .width(800.dp),
                             textAlign = TextAlign.Center,
                             color = if (row == 0) Color.White else Color.Black,
                             fontSize = if (row == 0) 18.sp else 16.sp
@@ -124,7 +126,7 @@ fun buildDrugs(
 fun newDrugAdder(
     drugsState: DrugsState
 ) {
-    val labels = listOf("Название препарата", "Стоимость")
+    val labels = listOf("Название препарата", "Единицы измерения", "Стоимость")
     Card(
         modifier = Modifier.padding(start = 450.dp, top = 100.dp).zIndex(1f)
     ) {
@@ -163,7 +165,7 @@ fun newDrugAdder(
                     .padding(top = 80.dp, start = 45.dp, end = 8.dp)
                     .background(color = Color(64, 224, 208), shape = RoundedCornerShape(16.dp))
             ) {
-                items(2) { count ->
+                items(3) { count ->
                     Row(
                         modifier = Modifier
                             .padding(
@@ -185,6 +187,10 @@ fun newDrugAdder(
                                     drugsState.name()
                                 }
 
+                                1 -> {
+                                    drugsState.measure()
+                                }
+
                                 else -> {
                                     drugsState.price()
                                 }
@@ -193,6 +199,10 @@ fun newDrugAdder(
                                 when (count) {
                                     0 -> {
                                         drugsState.updateName(it)
+                                    }
+
+                                    1 -> {
+                                        drugsState.updateMeasure(it)
                                     }
 
                                     else -> {
@@ -218,14 +228,15 @@ fun newDrugAdder(
                 Button(
                     onClick = {
                         if (!drugsState.editingDrug()) {
-                            DataImpl().addDrug(drugsState.name(), drugsState.price())
+                            DataImpl().addDrug(drugsState.name(), drugsState.price(), drugsState.measure())
                         } else {
-                            DataImpl().editDrug(drugsState.name(), drugsState.price(), drugsState.id())
+                            DataImpl().editDrug(drugsState.name(), drugsState.price(), drugsState.measure(), drugsState.id())
                         }
                         drugsState.updateAddingNewDrug(false)
                         drugsState.updateEditingDrug(false)
                         drugsState.updatePrice("")
                         drugsState.updateName("")
+                        drugsState.updateMeasure("")
                     },
                     modifier = Modifier.align(Alignment.Center).padding(top = 350.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)

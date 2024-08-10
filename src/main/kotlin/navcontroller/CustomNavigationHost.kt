@@ -15,7 +15,8 @@ fun customNavigationHost(
     clientsScreenState: ClientsScreenState,
     clientInfoState: ClientInfoState,
     servicesState: ServicesState,
-    drugsState: DrugsState
+    drugsState: DrugsState,
+    vaccineState: VaccineState
 ) {
     NavigationHost(navController) {
 
@@ -38,7 +39,8 @@ fun customNavigationHost(
                 shareDataState,
                 tabState,
                 petInfoState,
-                illnessHistoryState
+                illnessHistoryState,
+                clientInfoState
             )
         }
 
@@ -72,6 +74,12 @@ fun customNavigationHost(
         composable(Screen.DrugsScreen.name) {
             buildDrugs(
                 drugsState
+            )
+        }
+
+        composable(Screen.VaccineScreen.name) {
+            buildVaccine(
+                vaccineState
             )
         }
     }.build()

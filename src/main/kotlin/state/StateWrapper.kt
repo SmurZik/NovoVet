@@ -69,6 +69,13 @@ class StateWrapper {
         }
     }
 
+    @Composable
+    fun initialVaccineState(): VaccineState {
+        return remember {
+            VaccineState()
+        }
+    }
+
 //    fun clearPetInfoState(state: PetInfoState) {
 //        state.updateAge(Constant.EMPTY)
 //        state.updateNickname(Constant.EMPTY)
@@ -83,6 +90,13 @@ class StateWrapper {
         petInfoState.updateBreed(note[2])
         petInfoState.updateMale(note[3])
         petInfoState.updateAge(note[4])
+        if (note.size > 5) {
+            petInfoState.updateVac(note[5])
+            petInfoState.updateVacDate(note[6])
+        } else {
+            petInfoState.updateVac("")
+            petInfoState.updateVacDate("")
+        }
     }
 
     fun clearIllnessHistoryState(state: IllnessHistoryState) {
@@ -167,7 +181,6 @@ class StateWrapper {
         if (visit[1].contains("Францкевич")) state.updateChecked4(true)
         state.updateWeight(visit[4])
         state.updateVisit(visit)
-        state.updateVac(visit[16])
 
 //        state.updateDate(DataImpl().readableDateFormat(visit[11] + " " + visit[12]))
     }

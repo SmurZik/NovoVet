@@ -393,6 +393,15 @@ fun newPetAdder(
                         val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
                         illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
                         StateWrapper().clearIllnessHistoryState(illnessHistoryState)
+                        illnessHistoryState.updateCompletedIds(listOf())
+                        illnessHistoryState.updateCompletedPair(
+                            Pair(
+                                listOf("Услуга"),
+                                Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
+                            )
+                        )
+                        illnessHistoryState.updateCountLines(0)
+                        StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                     },
                     modifier = Modifier.align(Alignment.Center).padding(top = 500.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)

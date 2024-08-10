@@ -6,5 +6,6 @@ enum class Screen {
     ClientsScreen,
     ClientInfoScreen,
     ServicesScreen,
-    DrugsScreen
+    DrugsScreen,
+    VaccineScreen
 }

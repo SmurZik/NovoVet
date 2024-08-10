@@ -1,12 +1,15 @@
 package state
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import const.Constant
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Stable
-class OutpatientScreenState: State {
+class VaccineState: State {
 
     private var isSearch by mutableStateOf(false)
     private var searchText by mutableStateOf(Constant.EMPTY)

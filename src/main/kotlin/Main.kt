@@ -27,6 +27,7 @@ fun app() {
         Screen.ClientsScreen.name to "Владельцы",
         Screen.ServicesScreen.name to "Услуги",
         Screen.DrugsScreen.name to "Препараты",
+        Screen.VaccineScreen.name to "Вакцинации",
         Screen.ClientInfoScreen.name to "Клиент: ${
             clientInfoState.secondName() + " " + if (clientInfoState.firstName()
                     .isNotEmpty()
@@ -47,6 +48,7 @@ fun app() {
     val clientsScreenState = StateWrapper().initialClientsScreenState()
     val serviceState = StateWrapper().initialServiceState()
     val drugState = StateWrapper().initialDrugState()
+    val vaccineState = StateWrapper().initialVaccineState()
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
@@ -61,7 +63,13 @@ fun app() {
             )
             for (i in 0..2) {
                 Row(
-                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable { }
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
+                        if (i == 0) {
+                            tabState.addTab(Screen.VaccineScreen.name)
+                            tabState.updateActiveTab(Screen.VaccineScreen.name)
+                            navController.navigate(Screen.VaccineScreen.name)
+                        }
+                    }
                 ) {
                     Image(
                         painter = when (i) {
@@ -207,7 +215,8 @@ fun app() {
             clientsScreenState = clientsScreenState,
             clientInfoState = clientInfoState,
             servicesState = serviceState,
-            drugsState = drugState
+            drugsState = drugState,
+            vaccineState = vaccineState
         )
     }
 }

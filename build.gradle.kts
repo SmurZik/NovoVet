@@ -12,6 +12,7 @@ repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -21,6 +22,14 @@ dependencies {
     implementation("mysql:mysql-connector-java:8.0.33")
     implementation ("ca.gosyer:compose-material-dialogs-core:0.9.3")
     implementation ("ca.gosyer:compose-material-dialogs-datetime:0.9.3")
+    implementation("org.apache.pdfbox:pdfbox:3.0.0")
+    implementation("com.sun.mail:javax.mail:1.6.2")
+    implementation("com.itextpdf:itextpdf:5.0.6")
+//    implementation("androidx.compose.material3:material3:1.2.1") {
+//        exclude(group = "androidx.compose.foundation")
+//        exclude(group = "androidx.compose.ui")
+//        exclude(group = "androidx.compose.animation")
+//    }
 }
 
 tasks.test {
