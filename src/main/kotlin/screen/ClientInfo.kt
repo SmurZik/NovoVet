@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import data.DataImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
@@ -192,19 +195,26 @@ fun buildClientInfo(
                                     .width(250.dp)
                                 else Modifier
                                     .clickable {
-                                        val info =
-                                            DataImpl().getInfoByPetId(clientInfoState.petIds()[row - 1] to clientInfoState.addInfo()[row * 4 + 3])
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            DataImpl().getInfoByPetId(
+                                                clientInfoState.petIds()[row - 1] to clientInfoState.addInfo()[row * 4 + 3],
+                                                illnessHistoryState
+                                            )
+                                            illnessHistoryState.updateVisit(illnessHistoryState.info().first.second)
+                                            illnessHistoryState.updateNote(illnessHistoryState.info().first.first)
+                                            illnessHistoryState.updateId(illnessHistoryState.info().second.first)
+                                            illnessHistoryState.updateVisitId(illnessHistoryState.info().second.second)
+                                            StateWrapper().fillPetInfoState(
+                                                petInfoState,
+                                                illnessHistoryState.info().first.first
+                                            )
+                                            tabState.updateNicknameTab(petInfoState.nickname())
+                                        }
                                         tabState.addTab(Screen.OutpatientCardScreen.name)
                                         tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
-                                        illnessHistoryState.updateVisit(info.first.second)
-                                        illnessHistoryState.updateNote(info.first.first)
-                                        illnessHistoryState.updateId(info.second.first)
-                                        illnessHistoryState.updateVisitId(info.second.second)
                                         illnessHistoryState.updateIsPattern(true)
-                                        StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
-                                        tabState.updateNicknameTab(petInfoState.nickname())
                                     }
                                     .fillMaxHeight()
                                     .padding(13.dp)

@@ -35,6 +35,14 @@ class ClientInfoState: State {
 
     private var petIds by mutableStateOf(listOf<Int>())
 
+    private var clientInfo by mutableStateOf(Pair(Pair(listOf<String>(), listOf<String>()), Pair(0, listOf<Int>())))
+
+    fun updateClientInfo(value: Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>>) {
+        clientInfo = value
+    }
+
+    fun clientInfo(): Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>> = clientInfo
+
     override fun updateIsSearch(value: Boolean) {
         isSearch = value
     }

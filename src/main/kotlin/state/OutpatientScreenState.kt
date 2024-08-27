@@ -19,6 +19,36 @@ class OutpatientScreenState: State {
     private var dateResult by mutableStateOf(formattedDate)
     private var openDialog by mutableStateOf(false)
 
+    private var expanded by mutableStateOf(false)
+    private var confirmedPrice by mutableStateOf(false)
+    private var containPrice by mutableStateOf(false)
+
+    private var tempPair by mutableStateOf(Pair(Pair(listOf<String>(), listOf<Int>()), Pair(0, listOf<Int>())))
+
+    fun updateTempPair(value: Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>>) {
+        tempPair = value
+    }
+
+    fun tempPair(): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> = tempPair
+
+    fun updateContainPrice(value: Boolean) {
+        containPrice = value
+    }
+
+    fun containPrice(): Boolean = containPrice
+
+    fun updateConfirmedPrice(value: Boolean) {
+        confirmedPrice = value
+    }
+
+    fun confirmedPrice(): Boolean = confirmedPrice
+
+    fun updateExpanded(value: Boolean) {
+        expanded = value
+    }
+
+    fun expanded(): Boolean = expanded
+
     fun updateDateResult(value: Date) {
         dateResult = value
     }

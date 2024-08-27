@@ -1,6 +1,8 @@
 package data
 
+import state.ClientInfoState
 import state.IllnessHistoryState
+import state.OutpatientScreenState
 import java.sql.Connection
 import java.sql.Date
 import java.sql.DriverManager
@@ -11,7 +13,12 @@ class DataImpl {
     private val connection: Connection =
         DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
 
-    fun getOutpatientCard(search: String, searchBy: String, date: java.util.Date): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
+    suspend fun getOutpatientCard(
+        search: String,
+        searchBy: String,
+        date: java.util.Date,
+        outpatientScreenState: OutpatientScreenState
+    ): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
         val clientIds = mutableListOf<Int>()
         var countLines = 1
@@ -53,10 +60,15 @@ class DataImpl {
                 clientIds.add(outpatient.getInt(8))
             }
         }
+        outpatientScreenState.updateTempPair(Pair(Pair(currentNote, clientIds), Pair(countLines, petIds)))
         return Pair(Pair(currentNote, clientIds), Pair(countLines, petIds))
     }
 
-    fun getVaccineJournal(search: String, searchBy: String, date: java.util.Date): Pair<List<String>, Pair<Int, List<Int>>> {
+    fun getVaccineJournal(
+        search: String,
+        searchBy: String,
+        date: java.util.Date
+    ): Pair<List<String>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Название вакцины")
         var countLines = 1
         val visitIds = mutableListOf<Int>()
@@ -98,7 +110,7 @@ class DataImpl {
         updatePriceQuery.execute()
     }
 
-    fun getClientInfo(clientId: Int): Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>> {
+    suspend fun getClientInfo(clientId: Int, clientInfoState: ClientInfoState): Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>> {
         val getClientInfo =
             "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed, MAX(visit.date), pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where person.id = $clientId group by pet.id "
         val getClientInfoQuery = connection.prepareStatement(getClientInfo)
@@ -153,6 +165,7 @@ class DataImpl {
             info = infoWithoutVisit
             countLines = countLinesWithoutVisit
         }
+        clientInfoState.updateClientInfo(Pair(Pair(currentNote, info), Pair(countLines, petIds)))
         return Pair(Pair(currentNote, info), Pair(countLines, petIds))
     }
 
@@ -172,7 +185,7 @@ class DataImpl {
         return dates
     }
 
-    fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
+    suspend fun getInfoByPetId(data: Pair<Int, String>, illnessHistoryState: IllnessHistoryState): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
         if (data.first == 0) return Pair(Pair(listOf(), listOf()), 0 to 0)
         val searchByNickname = "select nickname, kind, breed, male, age, vac, vacDate from pet where id = ${data.first}"
         val searchByNicknameQuery = connection.prepareStatement(searchByNickname)
@@ -216,6 +229,7 @@ class DataImpl {
             visit.add(formatForDateNow.format(tempDate))
             visit.add(resultVisit.getTime(3).toString())
         }
+        illnessHistoryState.updateInfo(Pair(Pair(note, visit), data.first to visitId))
         return Pair(Pair(note, visit), data.first to visitId)
     }
 
@@ -549,7 +563,7 @@ class DataImpl {
         setNewCompletedQuery.execute()
     }
 
-    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int, servicePrice:String) {
+    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int, servicePrice: String) {
         val editCompleted =
             "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts', servicePrice = '$servicePrice' where id = $id"
         val editCompletedQuery = connection.prepareStatement(editCompleted)

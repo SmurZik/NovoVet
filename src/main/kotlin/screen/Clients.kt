@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import components.search
 import data.DataImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
@@ -133,14 +136,16 @@ fun buildClients(
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
-                                    val clientInfo = DataImpl().getClientInfo(clientIds[row - 1])
-                                    StateWrapper().fillClientInfoState(
-                                        clientInfoState,
-                                        clientInfo.first
-                                    )
-                                    clientInfoState.updateAddInfo(clientInfo.first.second)
-                                    clientInfoState.updateCountLines(clientInfo.second.first)
-                                    clientInfoState.updatePetIds(clientInfo.second.second)
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        DataImpl().getClientInfo(clientIds[row - 1], clientInfoState)
+                                        StateWrapper().fillClientInfoState(
+                                            clientInfoState,
+                                            clientInfoState.clientInfo().first
+                                        )
+                                        clientInfoState.updateAddInfo(clientInfoState.clientInfo().first.second)
+                                        clientInfoState.updateCountLines(clientInfoState.clientInfo().second.first)
+                                        clientInfoState.updatePetIds(clientInfoState.clientInfo().second.second)
+                                    }
                                     tabState.addTab(Screen.ClientInfoScreen.name)
                                     tabState.updateActiveTab(Screen.ClientInfoScreen.name)
                                     navController.navigate(Screen.ClientInfoScreen.name)
@@ -185,7 +190,7 @@ fun newClientAdder(
                 .height(600.dp)
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ) {
-            Row() {
+            Row {
                 Text(
                     text = if (!clientsScreenState.addingNewPet()) "Введите данные о клиенте: " else "Введите данные о питомце: ",
                     modifier = Modifier.padding(top = 35.dp, start = 30.dp),

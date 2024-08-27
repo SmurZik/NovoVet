@@ -40,7 +40,8 @@ fun customNavigationHost(
                 tabState,
                 petInfoState,
                 illnessHistoryState,
-                clientInfoState
+                clientInfoState,
+                outpatientScreenState
             )
         }
 

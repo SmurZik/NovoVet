@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.sp
 import components.DatePicker
 import components.search
 import data.DataImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
@@ -207,7 +210,7 @@ fun markup(
                 text = if (outpatientScreenState.dateResult() == formattedDate) "Показаны последние 100 приемов"
                 else "Показаны приемы за " + formatDate.format(outpatientScreenState.dateResult()),
                 fontSize = 20.sp,
-                modifier = Modifier.padding(top = 40.dp, start = 300.dp)
+                modifier = Modifier.padding(top = 40.dp, start = /*300.dp*/ 4.dp)
             )
         }
         if (outpatientScreenState.dateResult() != formattedDate) {
@@ -215,6 +218,14 @@ fun markup(
                 IconButton(
                     onClick = {
                         outpatientScreenState.updateDateResult(formattedDate)
+                        CoroutineScope(Dispatchers.Default).launch {
+                            DataImpl().getOutpatientCard(
+                                outpatientScreenState.searchText(),
+                                outpatientScreenState.searchBy(),
+                                outpatientScreenState.dateResult(),
+                                outpatientScreenState
+                            )
+                        }
                     },
                     modifier = Modifier.padding(top = 10.dp)
                 ) {
@@ -265,12 +276,18 @@ fun markup(
             .fillMaxSize()
     ) {
 
-        val tempPair =
-            DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy(), outpatientScreenState.dateResult())
-        val currentNote = tempPair.first.first
-        val clientIds = tempPair.first.second
-        val countLines = tempPair.second.first
-        val petId = tempPair.second.second
+        CoroutineScope(Dispatchers.Default).launch {
+            DataImpl().getOutpatientCard(
+                outpatientScreenState.searchText(),
+                outpatientScreenState.searchBy(),
+                outpatientScreenState.dateResult(),
+                outpatientScreenState
+            )
+        }
+        val currentNote = outpatientScreenState.tempPair().first.first
+        val clientIds = outpatientScreenState.tempPair().first.second
+        val countLines = outpatientScreenState.tempPair().second.first
+        val petId = outpatientScreenState.tempPair().second.second
 //        val date = currentNote[5]
 
         LazyColumn {
@@ -300,32 +317,38 @@ fun markup(
                                 .clickable {
                                     if (it == 2) {
                                         shareDataState.updateShareData(petId[row - 1] to currentNote[it + row * 4 - 2])
-                                        val info = DataImpl().getInfoByPetId(shareDataState.shareData())
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            DataImpl().getInfoByPetId(shareDataState.shareData(), illnessHistoryState)
+                                            illnessHistoryState.updateVisit(illnessHistoryState.info().first.second)
+                                            illnessHistoryState.updateNote(illnessHistoryState.info().first.first)
+                                            illnessHistoryState.updateId(illnessHistoryState.info().second.first)
+                                            illnessHistoryState.updateVisitId(illnessHistoryState.info().second.second)
+                                            StateWrapper().fillPetInfoState(petInfoState, illnessHistoryState.info().first.first)
+                                            tabState.updateNicknameTab(temp)
+                                        }
                                         tabState.addTab(Screen.OutpatientCardScreen.name)
                                         tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
-                                        tabState.updateNicknameTab(temp)
-                                        illnessHistoryState.updateVisit(info.first.second)
-                                        illnessHistoryState.updateNote(info.first.first)
-                                        illnessHistoryState.updateId(info.second.first)
-                                        illnessHistoryState.updateVisitId(info.second.second)
                                         illnessHistoryState.updateIsPattern(true)
-                                        StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
-                                        val infoClient = DataImpl().getClientInfo(clientIds[row - 1])
-                                        StateWrapper().fillClientInfoState(
-                                            clientInfoState,
-                                            infoClient.first
-                                        )
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            DataImpl().getClientInfo(clientIds[row - 1], clientInfoState)
+                                            StateWrapper().fillClientInfoState(
+                                                clientInfoState,
+                                                clientInfoState.clientInfo().first
+                                            )
+                                        }
                                     } else {
-                                        val info = DataImpl().getClientInfo(clientIds[row - 1])
-                                        StateWrapper().fillClientInfoState(
-                                            clientInfoState,
-                                            info.first
-                                        )
-                                        clientInfoState.updateAddInfo(info.first.second)
-                                        clientInfoState.updateCountLines(info.second.first)
-                                        clientInfoState.updatePetIds(info.second.second)
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            DataImpl().getClientInfo(clientIds[row - 1], clientInfoState)
+                                            StateWrapper().fillClientInfoState(
+                                                clientInfoState,
+                                                clientInfoState.clientInfo().first
+                                            )
+                                            clientInfoState.updateAddInfo(clientInfoState.clientInfo().first.second)
+                                            clientInfoState.updateCountLines(clientInfoState.clientInfo().second.first)
+                                            clientInfoState.updatePetIds(clientInfoState.clientInfo().second.second)
+                                        }
                                         tabState.addTab(Screen.ClientInfoScreen.name)
                                         tabState.updateActiveTab(Screen.ClientInfoScreen.name)
                                         navController.navigate(Screen.ClientInfoScreen.name)
