@@ -19,6 +19,28 @@ class OutpatientScreenState: State {
     private var dateResult by mutableStateOf(formattedDate)
     private var openDialog by mutableStateOf(false)
 
+    private var expanded by mutableStateOf(false)
+    private var confirmedPrice by mutableStateOf(false)
+    private var containPrice by mutableStateOf(false)
+
+    fun updateContainPrice(value: Boolean) {
+        containPrice = value
+    }
+
+    fun containPrice(): Boolean = containPrice
+
+    fun updateConfirmedPrice(value: Boolean) {
+        confirmedPrice = value
+    }
+
+    fun confirmedPrice(): Boolean = confirmedPrice
+
+    fun updateExpanded(value: Boolean) {
+        expanded = value
+    }
+
+    fun expanded(): Boolean = expanded
+
     fun updateDateResult(value: Date) {
         dateResult = value
     }

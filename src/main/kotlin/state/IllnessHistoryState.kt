@@ -98,6 +98,22 @@ class IllnessHistoryState {
 
     private var measureComplex by mutableStateOf(mutableListOf<MutableList<String>>())
 
+    private var info by mutableStateOf(Pair(Pair(listOf<String>(), listOf<String>()), Pair(0, 0)))
+
+    private var loading by mutableStateOf(false)
+
+    fun updateLoading(value: Boolean) {
+        loading = value
+    }
+
+    fun loading(): Boolean = loading
+
+    fun updateInfo(value: Pair<Pair<List<String>, List<String>>, Pair<Int, Int>>) {
+        info = value
+    }
+
+    fun info(): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> = info
+
     fun fillMeasureComplex(value: MutableList<MutableList<String>>) {
         measureComplex = value
     }

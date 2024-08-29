@@ -18,6 +18,8 @@ class ClientInfoState: State {
     private var lastName by mutableStateOf(Constant.EMPTY)
     private var phoneNumber by mutableStateOf(Constant.EMPTY)
     private var address by mutableStateOf(Constant.EMPTY)
+    private var email by mutableStateOf(Constant.EMPTY)
+
     private var save by mutableStateOf(false)
     private var clientId by mutableStateOf(0)
     private var countLines by mutableStateOf(0)
@@ -34,6 +36,12 @@ class ClientInfoState: State {
     private var addingNewPet by mutableStateOf(false)
 
     private var petIds by mutableStateOf(listOf<Int>())
+
+    fun updateEmail(value: String) {
+        email = value
+    }
+
+    fun email(): String = email
 
     override fun updateIsSearch(value: Boolean) {
         isSearch = value

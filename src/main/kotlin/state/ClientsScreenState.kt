@@ -16,6 +16,7 @@ class ClientsScreenState: State {
     private var lastName by mutableStateOf(Constant.EMPTY)
     private var address by mutableStateOf(Constant.EMPTY)
     private var phoneNumber by mutableStateOf(Constant.EMPTY)
+    private var email by mutableStateOf(Constant.EMPTY)
     private var expandedDialog by mutableStateOf(false)
     private var addingNewClient by mutableStateOf(false)
     private var addingNewPet by mutableStateOf(false)
@@ -27,6 +28,12 @@ class ClientsScreenState: State {
     private var age by mutableStateOf(Constant.EMPTY)
 
     private var clientId by mutableStateOf(0)
+
+    fun updateEmail(value: String) {
+        email = value
+    }
+
+    fun email(): String = email
 
     override fun updateIsSearch(value: Boolean) {
         isSearch = value

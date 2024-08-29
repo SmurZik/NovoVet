@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -25,6 +26,7 @@ dependencies {
     implementation("org.apache.pdfbox:pdfbox:3.0.0")
     implementation("com.sun.mail:javax.mail:1.6.2")
     implementation("com.itextpdf:itextpdf:5.0.6")
+
 //    implementation("androidx.compose.material3:material3:1.2.1") {
 //        exclude(group = "androidx.compose.foundation")
 //        exclude(group = "androidx.compose.ui")
@@ -43,6 +45,17 @@ tasks.test {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        nativeDistributions {
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi)
+            includeAllModules = true
+            packageName = "NovoVet"
+            packageVersion = "0.0.1"
+            windows {
+                packageVersion = "0.0.1"
+                msiPackageVersion = "0.0.1"
+                exePackageVersion = "0.0.1"
+            }
+        }
     }
 }
 

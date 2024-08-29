@@ -75,6 +75,17 @@ fun buildClients(
                         clientsScreenState.updateAddText(" фамилии")
                     } else {
                         clientsScreenState.updateAddingNewClient(true)
+                        clientsScreenState.updateEmail("")
+                        clientsScreenState.updateSecondName("")
+                        clientsScreenState.updateFirstName("")
+                        clientsScreenState.updateLastName("")
+                        clientsScreenState.updateAddress("")
+                        clientsScreenState.updatePhoneNumber("")
+                        clientsScreenState.updateNickname("")
+                        clientsScreenState.updateKind("")
+                        clientsScreenState.updateBreed("")
+                        clientsScreenState.updateMale("")
+                        clientsScreenState.updateAge("")
                     }
                 },
                 modifier = Modifier
@@ -173,7 +184,7 @@ fun newClientAdder(
     illnessHistoryState: IllnessHistoryState,
     petInfoState: PetInfoState
 ) {
-    val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес")
+    val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес", "Эл. почта")
     val labelsForPet = listOf("Кличка", "Вид", "Порода", "Пол", "Возраст")
     Card(
         modifier = Modifier.padding(start = 300.dp, top = 100.dp).zIndex(1f)
@@ -213,7 +224,7 @@ fun newClientAdder(
                     .padding(top = 80.dp, start = 60.dp, end = 8.dp)
                     .background(color = Color(64, 224, 208), shape = RoundedCornerShape(16.dp))
             ) {
-                items(5) { count ->
+                items(if (!clientsScreenState.addingNewPet()) 6 else 5) { count ->
                     Row(
                         modifier = Modifier
                             .padding(
@@ -251,9 +262,14 @@ fun newClientAdder(
                                     else clientsScreenState.male()
                                 }
 
-                                else -> {
+                                4 -> {
                                     if (!clientsScreenState.addingNewPet()) clientsScreenState.address()
                                     else clientsScreenState.age()
+                                }
+
+                                else -> {
+                                    if (!clientsScreenState.addingNewPet()) clientsScreenState.email()
+                                    else ""
                                 }
                             },
                             onValueChange = {
@@ -278,9 +294,13 @@ fun newClientAdder(
                                         else clientsScreenState.updateMale(it)
                                     }
 
-                                    else -> {
+                                    4 -> {
                                         if (!clientsScreenState.addingNewPet()) clientsScreenState.updateAddress(it)
                                         else clientsScreenState.updateAge(it)
+                                    }
+
+                                    else -> {
+                                        if (!clientsScreenState.addingNewPet()) clientsScreenState.updateEmail(it)
                                     }
                                 }
                             },
@@ -308,7 +328,8 @@ fun newClientAdder(
                                 clientsScreenState.firstName(),
                                 clientsScreenState.lastName(),
                                 clientsScreenState.address(),
-                                clientsScreenState.phoneNumber()
+                                clientsScreenState.phoneNumber(),
+                                clientsScreenState.email()
                             )
                             clientsScreenState.updateClientId(clientId)
                             clientsScreenState.updateAddingNewPet(true)
@@ -321,8 +342,8 @@ fun newClientAdder(
                                 clientsScreenState.age(),
                                 clientsScreenState.clientId()
                             )
-                            clientsScreenState.updateAddingNewClient(false)
                             clientsScreenState.updateAddingNewPet(false)
+                            clientsScreenState.updateAddingNewClient(false)
                             val petId = DataImpl().getPetId(
                                 clientsScreenState.nickname(),
                                 clientsScreenState.kind(),
@@ -330,6 +351,16 @@ fun newClientAdder(
                                 clientsScreenState.male(),
                                 clientsScreenState.age(),
                                 clientsScreenState.clientId()
+                            )
+                            StateWrapper().fillPetInfoState(
+                                petInfoState,
+                                listOf(
+                                    clientsScreenState.nickname(),
+                                    clientsScreenState.kind(),
+                                    clientsScreenState.breed(),
+                                    clientsScreenState.male(),
+                                    clientsScreenState.age()
+                                )
                             )
                             illnessHistoryState.updateId(petId)
                             tabState.addTab(Screen.OutpatientCardScreen.name)
@@ -342,19 +373,19 @@ fun newClientAdder(
                             val formatForDateNow = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
                             illnessHistoryState.updateDate(formatForDateNow.format(dateNow))
                             StateWrapper().clearIllnessHistoryState(illnessHistoryState)
-                            StateWrapper().fillPetInfoState(
-                                petInfoState,
-                                listOf(
-                                    clientsScreenState.nickname(),
-                                    clientsScreenState.kind(),
-                                    clientsScreenState.breed(),
-                                    clientsScreenState.male(),
-                                    clientsScreenState.age()
+                            illnessHistoryState.updateCompletedIds(listOf())
+                            illnessHistoryState.updateCompletedPair(
+                                Pair(
+                                    listOf("Услуга"),
+                                    Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
                                 )
                             )
+                            illnessHistoryState.clearMeasures(listOf(""))
+                            illnessHistoryState.updateCountLines(0)
+                            StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                         }
                     },
-                    modifier = Modifier.align(Alignment.Center).padding(top = 500.dp),
+                    modifier = Modifier.align(Alignment.Center).padding(top = 530.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
                 ) {
                     Text("Добавить")

@@ -68,6 +68,10 @@ fun app() {
                             tabState.addTab(Screen.VaccineScreen.name)
                             tabState.updateActiveTab(Screen.VaccineScreen.name)
                             navController.navigate(Screen.VaccineScreen.name)
+                        } else if (i == 1) {
+                            tabState.addTab(Screen.JournalScreen.name)
+                            tabState.updateActiveTab(Screen.JournalScreen.name)
+                            navController.navigate(Screen.JournalScreen.name)
                         }
                     }
                 ) {
@@ -119,7 +123,7 @@ fun app() {
                 fontSize = 20.sp,
                 modifier = Modifier.padding(all = 8.dp)
             )
-            for (i in 0..3) {
+            for (i in 0..2) {
                 Row(
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
                         when (i) {
@@ -128,12 +132,12 @@ fun app() {
                                 tabState.updateActiveTab(Screen.ClientsScreen.name)
                                 navController.navigate(Screen.ClientsScreen.name)
                             }
-                            2 -> {
+                            1 -> {
                                 tabState.addTab(Screen.DrugsScreen.name)
                                 tabState.updateActiveTab(Screen.DrugsScreen.name)
                                 navController.navigate(Screen.DrugsScreen.name)
                             }
-                            3 -> {
+                            2 -> {
                                 tabState.addTab(Screen.ServicesScreen.name)
                                 tabState.updateActiveTab(Screen.ServicesScreen.name)
                                 navController.navigate(Screen.ServicesScreen.name)
@@ -144,8 +148,7 @@ fun app() {
                     Image(
                         painter = when (i) {
                             0 -> painterResource("/person.png")
-                            1 -> painterResource("/animal.png")
-                            2 -> painterResource("/pills.png")
+                            1 -> painterResource("/pills.png")
                             else -> painterResource("/vet.png")
                         },
                         contentDescription = "Buttons",
@@ -154,8 +157,7 @@ fun app() {
                     Text(
                         text = when (i) {
                             0 -> "Владельцы"
-                            1 -> "Животные"
-                            2 -> "Препараты"
+                            1 -> "Препараты"
                             else -> "Услуги"
                         },
                         fontSize = 18.sp,

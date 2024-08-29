@@ -22,7 +22,7 @@ class DataImpl {
         val getOutpatient =
             if (search.isNotEmpty()) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where $searchBy REGEXP '^$search' order by date DESC"
             else if (date != formattedDate) "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC"
-            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC limit 5"
+            else "select visit.date, person.secondName, person.firstName, person.lastName, pet.nickname, visit.sum, pet.id, person.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id order by date DESC limit 100"
         val query = connection.prepareStatement(getOutpatient)
         val outpatient = query.executeQuery()
         val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
@@ -67,7 +67,7 @@ class DataImpl {
         val getVaccine =
             if (search.isNotEmpty()) "select date, client, pet, vac, visitId from vaccine where $toSearch REGEXP '$search' order by date DESC"
             else if (date != formattedDate) "select date, client, pet, vac, visitId from vaccine order by date DESC"
-            else "select date, client, pet, vac, visitId from vaccine order by date DESC limit 5"
+            else "select date, client, pet, vac, visitId from vaccine order by date DESC limit 100"
         val query = connection.prepareStatement(getVaccine)
         val vaccine = query.executeQuery()
         val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
@@ -100,7 +100,7 @@ class DataImpl {
 
     fun getClientInfo(clientId: Int): Pair<Pair<List<String>, List<String>>, Pair<Int, List<Int>>> {
         val getClientInfo =
-            "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed, MAX(visit.date), pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where person.id = $clientId group by pet.id "
+            "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, person.email, pet.nickname, pet.kind, pet.breed, MAX(visit.date), pet.id from person join pet on person.id = pet.ownerId join visit on visit.petId = pet.id where person.id = $clientId group by pet.id "
         val getClientInfoQuery = connection.prepareStatement(getClientInfo)
         var info = mutableListOf("Кличка", "Вид", "Порода", "Последний визит")
         var currentNote = mutableListOf<String>()
@@ -115,18 +115,19 @@ class DataImpl {
             currentNote.add(clientInfo.getString(4))
             currentNote.add(clientInfo.getString(5))
             currentNote.add(clientInfo.getString(6))
+            currentNote.add(clientInfo.getString(7))
 
-            info.add(clientInfo.getString(7))
             info.add(clientInfo.getString(8))
             info.add(clientInfo.getString(9))
-            val tempDate = clientInfo.getDate(10)
+            info.add(clientInfo.getString(10))
+            val tempDate = clientInfo.getDate(11)
             val formatForDateNow = SimpleDateFormat("dd.MM.yyyy")
-            info.add(formatForDateNow.format(tempDate) + " " + clientInfo.getTime(10).toString())
-            petIds.add(clientInfo.getInt(11))
+            info.add(formatForDateNow.format(tempDate) + " " + clientInfo.getTime(11).toString())
+            petIds.add(clientInfo.getInt(12))
         }
         if (currentNote.isEmpty()) {
             val getClientInfoWithoutVisit =
-                "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, pet.nickname, pet.kind, pet.breed from person join pet on person.id = pet.ownerId where person.id = $clientId limit 1"
+                "select person.id, person.secondName, person.firstName, person.lastName, person.address, person.phone, person.email, pet.nickname, pet.kind, pet.breed from person join pet on person.id = pet.ownerId where person.id = $clientId limit 1"
             val getClientInfoWithoutVisitQuery = connection.prepareStatement(getClientInfoWithoutVisit)
             val infoWithoutVisit = mutableListOf("Кличка", "Вид", "Порода", "Последний визит")
             val currentNoteWithoutVisit = mutableListOf<String>()
@@ -141,13 +142,14 @@ class DataImpl {
                 currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(4))
                 currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(5))
                 currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(6))
+                currentNoteWithoutVisit.add(clientInfoWithoutVisit.getString(7))
 
-                infoWithoutVisit.add(clientInfoWithoutVisit.getString(7))
                 infoWithoutVisit.add(clientInfoWithoutVisit.getString(8))
                 infoWithoutVisit.add(clientInfoWithoutVisit.getString(9))
+                infoWithoutVisit.add(clientInfoWithoutVisit.getString(10))
                 infoWithoutVisit.add("-")
                 infoWithoutVisit.add("")
-                petIds.add(clientInfoWithoutVisit.getInt(11))
+//                petIds.add(clientInfoWithoutVisit.getInt(12))
             }
             currentNote = currentNoteWithoutVisit
             info = infoWithoutVisit
@@ -172,7 +174,7 @@ class DataImpl {
         return dates
     }
 
-    fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
+    suspend fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
         if (data.first == 0) return Pair(Pair(listOf(), listOf()), 0 to 0)
         val searchByNickname = "select nickname, kind, breed, male, age, vac, vacDate from pet where id = ${data.first}"
         val searchByNicknameQuery = connection.prepareStatement(searchByNickname)
@@ -258,10 +260,11 @@ class DataImpl {
         lastName: String,
         address: String,
         phone: String,
+        email: String,
         clientId: Int
     ) {
         val setClientInfo =
-            "update person set secondName = '$secondName', firstName = '$firstName', lastName = '$lastName', address = '$address', phone = '$phone' where id = $clientId;"
+            "update person set secondName = '$secondName', firstName = '$firstName', lastName = '$lastName', address = '$address', phone = '$phone', email = '$email' where id = $clientId;"
         val setClientInfoQuery = connection.prepareStatement(setClientInfo)
         setClientInfoQuery.execute()
     }
@@ -371,6 +374,15 @@ class DataImpl {
                 "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()}');"
             val setVisitQuery = connection.prepareStatement(setNewVisit)
             setVisitQuery.execute()
+            var id = 0
+            val getNewId =
+                "select id from visit where petId = '$petId' and date = '$formattedDate'"
+            val query = connection.prepareStatement(getNewId)
+            val result = query.executeQuery()
+            while (result.next()) {
+                id = result.getInt(1)
+            }
+            illnessHistoryState.updateVisitId(id)
         } else {
             val updateVisit =
                 "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations', doctors = '$doctors', weight = '${illnessHistoryState.weight()}'  where id = $id;"
@@ -404,15 +416,16 @@ class DataImpl {
         firstName: String,
         lastName: String,
         address: String,
-        phone: String
+        phone: String,
+        email: String
     ): Int {
         var clientId = 0
         val setNewClient =
-            "INSERT INTO person (secondName, firstName, lastName, address, phone) VALUES ('$secondName', '$firstName', '$lastName', '$address', '$phone');"
+            "INSERT INTO person (secondName, firstName, lastName, address, phone, email) VALUES ('$secondName', '$firstName', '$lastName', '$address', '$phone', '$email');"
         val setNewClientQuery = connection.prepareStatement(setNewClient)
         setNewClientQuery.execute()
         val getClientId =
-            "SELECT id from person where secondName = '$secondName' and firstName = '$firstName' and lastName = '$lastName' and address = '$address' and phone = '$phone';"
+            "SELECT id from person where secondName = '$secondName' and firstName = '$firstName' and lastName = '$lastName' and address = '$address' and phone = '$phone' and email = '$email';"
         val getClientIdQuery = connection.prepareStatement(getClientId)
         val result = getClientIdQuery.executeQuery()
         while (result.next()) {

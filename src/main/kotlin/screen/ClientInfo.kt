@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import data.DataImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
@@ -38,7 +43,7 @@ fun buildClientInfo(
     illnessHistoryState: IllnessHistoryState,
     petInfoState: PetInfoState
 ) {
-    val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес")
+    val labels = listOf("Фамилия", "Имя", "Отчество", "Телефон", "Адрес", "Эл. почта")
     val textButton = listOf("Добавить питомца", "Найти")
 
     if (clientInfoState.addingNewPet()) {
@@ -65,7 +70,7 @@ fun buildClientInfo(
                     .padding(top = 80.dp, start = 8.dp, end = 8.dp)
                     .background(color = Color(64, 224, 208), shape = RoundedCornerShape(16.dp))
             ) {
-                items(5) { count ->
+                items(6) { count ->
                     Row(
                         modifier = Modifier
                             .padding(
@@ -87,7 +92,8 @@ fun buildClientInfo(
                                 1 -> clientInfoState.firstName()
                                 2 -> clientInfoState.lastName()
                                 3 -> clientInfoState.phoneNumber()
-                                else -> clientInfoState.address()
+                                4 -> clientInfoState.address()
+                                else -> clientInfoState.email()
                             },
                             onValueChange = {
                                 when (count) {
@@ -101,7 +107,8 @@ fun buildClientInfo(
 
                                     2 -> clientInfoState.updateLastName(it)
                                     3 -> clientInfoState.updatePhoneNumber(it)
-                                    else -> clientInfoState.updateAddress(it)
+                                    4 -> clientInfoState.updateAddress(it)
+                                    else -> clientInfoState.updateEmail(it)
                                 }
                             },
                             modifier = Modifier
@@ -129,6 +136,7 @@ fun buildClientInfo(
                                 lastName = clientInfoState.lastName(),
                                 address = clientInfoState.address(),
                                 phone = clientInfoState.phoneNumber(),
+                                email = clientInfoState.email(),
                                 clientId = clientInfoState.clientId()
                             )
                         }
@@ -152,6 +160,11 @@ fun buildClientInfo(
                     Button(
                         onClick = {
                             clientInfoState.updateAddingNewPet(true)
+                            clientInfoState.updateNickname("")
+                            clientInfoState.updateKind("")
+                            clientInfoState.updateBreed("")
+                            clientInfoState.updateMale("")
+                            clientInfoState.updateAge("")
                         },
                         modifier = Modifier
                             .padding(top = 30.dp, end = 8.dp)
@@ -192,19 +205,23 @@ fun buildClientInfo(
                                     .width(250.dp)
                                 else Modifier
                                     .clickable {
-                                        val info =
-                                            DataImpl().getInfoByPetId(clientInfoState.petIds()[row - 1] to clientInfoState.addInfo()[row * 4 + 3])
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            val info = withContext(Dispatchers.IO) {
+                                                DataImpl().getInfoByPetId(clientInfoState.petIds()[row - 1] to clientInfoState.addInfo()[row * 4 + 3])
+                                            }
+                                            illnessHistoryState.updateVisit(info.first.second)
+                                            illnessHistoryState.updateNote(info.first.first)
+                                            illnessHistoryState.updateId(info.second.first)
+                                            illnessHistoryState.updateVisitId(info.second.second)
+                                            StateWrapper().fillPetInfoState(petInfoState, info.first.first)
+                                            tabState.updateNicknameTab(petInfoState.nickname())
+                                        }
+
                                         tabState.addTab(Screen.OutpatientCardScreen.name)
                                         tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
-                                        illnessHistoryState.updateVisit(info.first.second)
-                                        illnessHistoryState.updateNote(info.first.first)
-                                        illnessHistoryState.updateId(info.second.first)
-                                        illnessHistoryState.updateVisitId(info.second.second)
                                         illnessHistoryState.updateIsPattern(true)
-                                        StateWrapper().fillPetInfoState(petInfoState, info.first.first)
                                         illnessHistoryState.updateIsNew(false)
-                                        tabState.updateNicknameTab(petInfoState.nickname())
                                     }
                                     .fillMaxHeight()
                                     .padding(13.dp)
@@ -400,6 +417,7 @@ fun newPetAdder(
                                 Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
                             )
                         )
+                        illnessHistoryState.clearMeasures(listOf(""))
                         illnessHistoryState.updateCountLines(0)
                         StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                     },

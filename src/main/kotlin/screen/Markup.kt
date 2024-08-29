@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.sp
 import components.DatePicker
 import components.search
 import data.DataImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import navcontroller.NavController
 import navcontroller.Screen
 import state.*
@@ -265,6 +269,7 @@ fun markup(
             .fillMaxSize()
     ) {
 
+
         val tempPair =
             DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy(), outpatientScreenState.dateResult())
         val currentNote = tempPair.first.first
@@ -300,23 +305,29 @@ fun markup(
                                 .clickable {
                                     if (it == 2) {
                                         shareDataState.updateShareData(petId[row - 1] to currentNote[it + row * 4 - 2])
-                                        val info = DataImpl().getInfoByPetId(shareDataState.shareData())
+                                        CoroutineScope(Dispatchers.Default).launch {
+                                            illnessHistoryState.updateLoading(true)
+                                            val info = withContext(Dispatchers.IO) {
+                                                DataImpl().getInfoByPetId(shareDataState.shareData())
+                                            }
+                                            illnessHistoryState.updateVisit(info.first.second)
+                                            illnessHistoryState.updateNote(info.first.first)
+                                            illnessHistoryState.updateId(info.second.first)
+                                            illnessHistoryState.updateVisitId(info.second.second)
+                                            StateWrapper().fillPetInfoState(petInfoState, info.first.first)
+                                            tabState.updateNicknameTab(temp)
+                                            illnessHistoryState.updateIsPattern(true)
+                                            illnessHistoryState.updateIsNew(false)
+                                            val infoClient = DataImpl().getClientInfo(clientIds[row - 1])
+                                            StateWrapper().fillClientInfoState(
+                                                clientInfoState,
+                                                infoClient.first
+                                            )
+                                            illnessHistoryState.updateLoading(false)
+                                        }
                                         tabState.addTab(Screen.OutpatientCardScreen.name)
                                         tabState.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
-                                        tabState.updateNicknameTab(temp)
-                                        illnessHistoryState.updateVisit(info.first.second)
-                                        illnessHistoryState.updateNote(info.first.first)
-                                        illnessHistoryState.updateId(info.second.first)
-                                        illnessHistoryState.updateVisitId(info.second.second)
-                                        illnessHistoryState.updateIsPattern(true)
-                                        StateWrapper().fillPetInfoState(petInfoState, info.first.first)
-                                        illnessHistoryState.updateIsNew(false)
-                                        val infoClient = DataImpl().getClientInfo(clientIds[row - 1])
-                                        StateWrapper().fillClientInfoState(
-                                            clientInfoState,
-                                            infoClient.first
-                                        )
                                     } else {
                                         val info = DataImpl().getClientInfo(clientIds[row - 1])
                                         StateWrapper().fillClientInfoState(
