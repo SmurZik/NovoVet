@@ -1,10 +1,7 @@
 package navcontroller
 
 import androidx.compose.runtime.Composable
-import screen.buildClientInfo
-import screen.buildClients
-import screen.buildOutpatientCard
-import screen.markup
+import screen.*
 import state.*
 
 @Composable
@@ -16,7 +13,10 @@ fun customNavigationHost(
     petInfoState: PetInfoState,
     illnessHistoryState: IllnessHistoryState,
     clientsScreenState: ClientsScreenState,
-    clientInfoState: ClientInfoState
+    clientInfoState: ClientInfoState,
+    servicesState: ServicesState,
+    drugsState: DrugsState,
+    vaccineState: VaccineState
 ) {
     NavigationHost(navController) {
 
@@ -39,7 +39,9 @@ fun customNavigationHost(
                 shareDataState,
                 tabState,
                 petInfoState,
-                illnessHistoryState
+                illnessHistoryState,
+                clientInfoState,
+                outpatientScreenState
             )
         }
 
@@ -47,12 +49,39 @@ fun customNavigationHost(
             buildClients(
                 navController,
                 clientsScreenState,
-                tabState
+                clientInfoState,
+                tabState,
+                illnessHistoryState,
+                petInfoState
             )
         }
 
         composable(Screen.ClientInfoScreen.name) {
-            buildClientInfo(clientInfoState)
+            buildClientInfo(
+                clientInfoState,
+                tabState,
+                navController,
+                illnessHistoryState,
+                petInfoState
+            )
+        }
+
+        composable(Screen.ServicesScreen.name) {
+            buildServices(
+                servicesState
+            )
+        }
+
+        composable(Screen.DrugsScreen.name) {
+            buildDrugs(
+                drugsState
+            )
+        }
+
+        composable(Screen.VaccineScreen.name) {
+            buildVaccine(
+                vaccineState
+            )
         }
     }.build()
 }

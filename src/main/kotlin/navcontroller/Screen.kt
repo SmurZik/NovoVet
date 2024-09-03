@@ -4,5 +4,8 @@ enum class Screen {
     OutpatientCardScreen,
     JournalScreen,
     ClientsScreen,
-    ClientInfoScreen
+    ClientInfoScreen,
+    ServicesScreen,
+    DrugsScreen,
+    VaccineScreen
 }

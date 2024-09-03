@@ -13,6 +13,21 @@ class PetInfoState {
     private var age by mutableStateOf(Constant.EMPTY)
     private var save by mutableStateOf(false)
 
+    private var vac by mutableStateOf(Constant.EMPTY)
+    private var vacDate by mutableStateOf(Constant.EMPTY)
+
+    fun updateVacDate(value: String) {
+        vacDate = value
+    }
+
+    fun vacDate(): String = vacDate
+
+    fun updateVac(value: String) {
+        vac = value
+    }
+
+    fun vac(): String = vac
+
     fun updateNickname(value: String) {
         nickname = value
     }

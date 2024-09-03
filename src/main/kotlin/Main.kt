@@ -25,6 +25,9 @@ fun app() {
         Screen.JournalScreen.name to "Амбулаторные приемы",
         Screen.OutpatientCardScreen.name to "${tabState.nicknameTab()} - История болезни",
         Screen.ClientsScreen.name to "Владельцы",
+        Screen.ServicesScreen.name to "Услуги",
+        Screen.DrugsScreen.name to "Препараты",
+        Screen.VaccineScreen.name to "Вакцинации",
         Screen.ClientInfoScreen.name to "Клиент: ${
             clientInfoState.secondName() + " " + if (clientInfoState.firstName()
                     .isNotEmpty()
@@ -43,6 +46,9 @@ fun app() {
     val illnessHistoryState = StateWrapper().initialIllnessHistoryState()
     val shareDataState = StateWrapper().initialShareDataState()
     val clientsScreenState = StateWrapper().initialClientsScreenState()
+    val serviceState = StateWrapper().initialServiceState()
+    val drugState = StateWrapper().initialDrugState()
+    val vaccineState = StateWrapper().initialVaccineState()
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
@@ -57,7 +63,17 @@ fun app() {
             )
             for (i in 0..2) {
                 Row(
-                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable { }
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
+                        if (i == 0) {
+                            tabState.addTab(Screen.VaccineScreen.name)
+                            tabState.updateActiveTab(Screen.VaccineScreen.name)
+                            navController.navigate(Screen.VaccineScreen.name)
+                        } else if (i == 1) {
+                            tabState.addTab(Screen.JournalScreen.name)
+                            tabState.updateActiveTab(Screen.JournalScreen.name)
+                            navController.navigate(Screen.JournalScreen.name)
+                        }
+                    }
                 ) {
                     Image(
                         painter = when (i) {
@@ -107,21 +123,32 @@ fun app() {
                 fontSize = 20.sp,
                 modifier = Modifier.padding(all = 8.dp)
             )
-            for (i in 0..3) {
+            for (i in 0..2) {
                 Row(
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
-                        if (i == 0) {
-                            tabState.addTab(Screen.ClientsScreen.name)
-                            tabState.updateActiveTab(Screen.ClientsScreen.name)
-                            navController.navigate(Screen.ClientsScreen.name)
+                        when (i) {
+                            0 -> {
+                                tabState.addTab(Screen.ClientsScreen.name)
+                                tabState.updateActiveTab(Screen.ClientsScreen.name)
+                                navController.navigate(Screen.ClientsScreen.name)
+                            }
+                            1 -> {
+                                tabState.addTab(Screen.DrugsScreen.name)
+                                tabState.updateActiveTab(Screen.DrugsScreen.name)
+                                navController.navigate(Screen.DrugsScreen.name)
+                            }
+                            2 -> {
+                                tabState.addTab(Screen.ServicesScreen.name)
+                                tabState.updateActiveTab(Screen.ServicesScreen.name)
+                                navController.navigate(Screen.ServicesScreen.name)
+                            }
                         }
                     }
                 ) {
                     Image(
                         painter = when (i) {
                             0 -> painterResource("/person.png")
-                            1 -> painterResource("/animal.png")
-                            2 -> painterResource("/pills.png")
+                            1 -> painterResource("/pills.png")
                             else -> painterResource("/vet.png")
                         },
                         contentDescription = "Buttons",
@@ -130,8 +157,7 @@ fun app() {
                     Text(
                         text = when (i) {
                             0 -> "Владельцы"
-                            1 -> "Животные"
-                            2 -> "Лекарства"
+                            1 -> "Препараты"
                             else -> "Услуги"
                         },
                         fontSize = 18.sp,
@@ -189,7 +215,10 @@ fun app() {
             petInfoState = petInfoState,
             illnessHistoryState = illnessHistoryState,
             clientsScreenState = clientsScreenState,
-            clientInfoState = clientInfoState
+            clientInfoState = clientInfoState,
+            servicesState = serviceState,
+            drugsState = drugState,
+            vaccineState = vaccineState
         )
     }
 }

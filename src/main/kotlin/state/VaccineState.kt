@@ -1,12 +1,15 @@
 package state
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import const.Constant
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Stable
-class OutpatientScreenState: State {
+class VaccineState: State {
 
     private var isSearch by mutableStateOf(false)
     private var searchText by mutableStateOf(Constant.EMPTY)
@@ -18,28 +21,6 @@ class OutpatientScreenState: State {
     private val formattedDate = formatDate.parse(dateString)
     private var dateResult by mutableStateOf(formattedDate)
     private var openDialog by mutableStateOf(false)
-
-    private var expanded by mutableStateOf(false)
-    private var confirmedPrice by mutableStateOf(false)
-    private var containPrice by mutableStateOf(false)
-
-    fun updateContainPrice(value: Boolean) {
-        containPrice = value
-    }
-
-    fun containPrice(): Boolean = containPrice
-
-    fun updateConfirmedPrice(value: Boolean) {
-        confirmedPrice = value
-    }
-
-    fun confirmedPrice(): Boolean = confirmedPrice
-
-    fun updateExpanded(value: Boolean) {
-        expanded = value
-    }
-
-    fun expanded(): Boolean = expanded
 
     fun updateDateResult(value: Date) {
         dateResult = value
