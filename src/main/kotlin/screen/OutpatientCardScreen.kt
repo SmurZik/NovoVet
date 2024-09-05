@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Paragraph
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -1014,6 +1015,9 @@ fun priceDialog(
                                     )
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
+                                doc.add(com.itextpdf.text.Paragraph("Клиент: ${clientInfoState.secondName() + " " + clientInfoState.firstName() + " " + clientInfoState.lastName()}", font))
+                                doc.add(com.itextpdf.text.Paragraph("Питомец: ${petInfoState.kind() + " " + petInfoState.nickname()}", font))
+                                doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Осмотр", font))
                                 doc.add(com.itextpdf.text.Paragraph("Врачи на приеме: ${visit[1]}", font))
                                 doc.add(com.itextpdf.text.Paragraph("Со слов владельца: ${visit[2]}", font))
@@ -1085,7 +1089,7 @@ fun priceDialog(
                             var text1 = ""
                             var sum = 0
                             illnessHistoryState.completedPair().first.forEach {
-                                if (it != "Услуга") {
+                                if (it != "Услуга" && it != "") {
                                     val price =
                                         DataImpl().getRealServicePrice(it, illnessHistoryState.visitId())
                                     sum += price.toInt()
@@ -1186,6 +1190,9 @@ fun priceDialog(
                                     )
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
+                                doc.add(com.itextpdf.text.Paragraph("Клиент: ${clientInfoState.secondName() + " " + clientInfoState.firstName() + " " + clientInfoState.lastName()}", font))
+                                doc.add(com.itextpdf.text.Paragraph("Питомец: ${petInfoState.kind() + " " + petInfoState.nickname()}", font))
+                                doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Осмотр", font))
                                 doc.add(com.itextpdf.text.Paragraph("Врачи на приеме: ${visit[1]}", font))
                                 doc.add(com.itextpdf.text.Paragraph("Со слов владельца: ${visit[2]}", font))
@@ -1251,7 +1258,7 @@ fun priceDialog(
                             var text1 = ""
                             var sum = 0
                             illnessHistoryState.completedPair().first.forEach {
-                                if (it != "Услуга") {
+                                if (it != "Услуга" && it != "") {
                                     val price =
                                         DataImpl().getRealServicePrice(it, illnessHistoryState.visitId())
                                     sum += price.toInt()
@@ -1705,6 +1712,8 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                 )
                 {
                     Column() {
+                        val serviceFindRussian = Regex("[[а-яА-Я]* *,*]*")
+                        val serviceFindEnglish = Regex("[[a-zA-Z]* *,*]*")
                         TextField(
                             value = illnessHistoryState.service(),
                             placeholder = {
@@ -1712,12 +1721,14 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             },
                             textStyle = TextStyle.Default.copy(fontSize = 18.sp),
                             onValueChange = {
-                                illnessHistoryState.updateService(it)
-                                illnessHistoryState.updateSearchingService(true)
-                                if (it != "") {
-                                    illnessHistoryState.updateServicesList(DataImpl().getServiceByFirstLetter(it))
-                                } else {
-                                    illnessHistoryState.updateSearchingService(false)
+                                if (serviceFindEnglish.matches(it) || serviceFindRussian.matches(it)) {
+                                    illnessHistoryState.updateService(it)
+                                    illnessHistoryState.updateSearchingService(true)
+                                    if (it != "") {
+                                        illnessHistoryState.updateServicesList(DataImpl().getServiceByFirstLetter(it))
+                                    } else {
+                                        illnessHistoryState.updateSearchingService(false)
+                                    }
                                 }
                             },
                             modifier = Modifier.width(400.dp),
@@ -1731,14 +1742,15 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             },
                             modifier = Modifier.background(color = Color(250,240,230))
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier.width(400.dp)
+                            ) {
                                 illnessHistoryState.servicesList().forEach {
                                     Text(
                                         text = it,
                                         textAlign = TextAlign.Start,
                                         fontSize = 18.sp,
-                                        modifier = Modifier.height(30.dp)
-                                            .width(400.dp)
+                                        modifier = Modifier.fillMaxWidth()
                                             .padding(vertical = 4.dp, horizontal = 4.dp)
                                             .clickable {
                                                 illnessHistoryState.updateService(it)
@@ -1773,6 +1785,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             illnessHistoryState.updateWritingPrice(false)
                             illnessHistoryState.updateServicePrice(illnessHistoryState.priceTemplate())
                         }
+                        val priceRegex = Regex("\\d*")
                         TextField(
                             value = illnessHistoryState.servicePrice(),
                             readOnly = !illnessHistoryState.writingPrice(),
@@ -1783,7 +1796,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             },
                             textStyle = TextStyle.Default.copy(fontSize = 18.sp),
                             onValueChange = {
-                                illnessHistoryState.updateServicePrice(it)
+                                if (priceRegex.matches(it)) illnessHistoryState.updateServicePrice(it)
                             },
                             modifier = Modifier.width(300.dp),
                         )
@@ -1797,6 +1810,8 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                     )
 
                     LazyColumn(modifier = Modifier.width(800.dp)) {
+                        val drugFindRussian = Regex("[[а-яА-Я]* *,*]*")
+                        val drugFindEnglish = Regex("[[a-zA-Z]* *,*]*")
                         items(illnessHistoryState.drugCount()) { count ->
                             Row() {
                                 TextField(
@@ -1807,13 +1822,15 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                     value = illnessHistoryState.drugs()[count],
                                     textStyle = TextStyle.Default.copy(fontSize = 18.sp),
                                     onValueChange = {
-                                        illnessHistoryState.updateSelectedDrug(it, count)
-                                        illnessHistoryState.updateSearchingDrug(true)
-                                        illnessHistoryState.updateCurrentIndex(count)
-                                        if (it != "") {
-                                            illnessHistoryState.updateDrugsList(DataImpl().getDrugByFirstLetter(it))
-                                        } else {
-                                            illnessHistoryState.updateSearchingDrug(false)
+                                        if (drugFindEnglish.matches(it) || drugFindRussian.matches(it)) {
+                                            illnessHistoryState.updateSelectedDrug(it, count)
+                                            illnessHistoryState.updateSearchingDrug(true)
+                                            illnessHistoryState.updateCurrentIndex(count)
+                                            if (it != "") {
+                                                illnessHistoryState.updateDrugsList(DataImpl().getDrugByFirstLetter(it))
+                                            } else {
+                                                illnessHistoryState.updateSearchingDrug(false)
+                                            }
                                         }
                                     },
                                 )
@@ -1857,7 +1874,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                         .fillMaxHeight(),
                                     color = Color.Cyan
                                 )
-
+                                val amount = Regex("\\d*\\.?\\d*")
                                 TextField(
                                     placeholder = {
                                         Text("Введите количество")
@@ -1866,8 +1883,10 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                     textStyle = TextStyle.Default.copy(fontSize = 18.sp),
                                     modifier = Modifier.width(250.dp),
                                     onValueChange = {
-                                        illnessHistoryState.updateSelectedAmount(it, count)
-                                        illnessHistoryState.updateCurrentIndex(count)
+                                        if (amount.matches(it)) {
+                                            illnessHistoryState.updateSelectedAmount(it, count)
+                                            illnessHistoryState.updateCurrentIndex(count)
+                                        }
                                     },
                                 )
 
@@ -1928,7 +1947,6 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                     illnessHistoryState.updateCountLines(countLines)
                     illnessHistoryState.updateCompletedIds(completedIds)
                     illnessHistoryState.updateCompletedPair(DataImpl().parseCompleted(tempCompleted, countLines))
-                    println(illnessHistoryState.price())
                     val price = DataImpl().getPrice(
                         illnessHistoryState.completedPair().first,
                         illnessHistoryState.completedPair().second.first,
@@ -2192,7 +2210,7 @@ fun buildOneNote(
                     Checkbox(
                         modifier = Modifier.padding(end = 30.dp),
                         checked = illnessHistoryState.deficationNorm(),
-                        enabled = !illnessHistoryState.deficationOften() && !illnessHistoryState.deficationRarely(),
+                        enabled = !illnessHistoryState.deficationOften() && !illnessHistoryState.deficationRarely() && !illnessHistoryState.deficationLack(),
                         onCheckedChange = {
                             illnessHistoryState.updateDeficationNorm(it)
                         }
@@ -2204,7 +2222,7 @@ fun buildOneNote(
                     Checkbox(
                         modifier = Modifier.padding(end = 30.dp),
                         checked = illnessHistoryState.deficationRarely(),
-                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationOften(),
+                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationOften() && !illnessHistoryState.deficationLack(),
                         onCheckedChange = {
                             illnessHistoryState.updateDeficationRarely(it)
                         }
@@ -2214,10 +2232,22 @@ fun buildOneNote(
                         fontSize = 18.sp
                     )
                     Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
                         checked = illnessHistoryState.deficationOften(),
-                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationRarely(),
+                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationRarely() && !illnessHistoryState.deficationLack(),
                         onCheckedChange = {
                             illnessHistoryState.updateDeficationOften(it)
+                        }
+                    )
+                    Text(
+                        "Нет",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        checked = illnessHistoryState.deficationLack(),
+                        enabled = !illnessHistoryState.deficationNorm() && !illnessHistoryState.deficationRarely() && !illnessHistoryState.deficationOften(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateDeficationLack(it)
                         }
                     )
                 }

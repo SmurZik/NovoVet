@@ -128,6 +128,7 @@ class StateWrapper {
         state.updateDeficationNorm(false)
         state.updateDeficationRarely(false)
         state.updateDeficationOften(false)
+        state.updateDeficationLack(false)
         state.updateUrinationNorm(false)
         state.updateUrinationLack(false)
         state.updateUrinationOften(false)
@@ -186,14 +187,23 @@ class StateWrapper {
                 state.updateDeficationNorm(true)
                 state.updateDeficationRarely(false)
                 state.updateDeficationOften(false)
+                state.updateDeficationLack(false)
             }
             "Неоформленная (редко)" -> {
                 state.updateDeficationRarely(true)
                 state.updateDeficationNorm(false)
                 state.updateDeficationOften(false)
+                state.updateDeficationLack(false)
             }
             "Неоформленная (часто)" -> {
                 state.updateDeficationOften(true)
+                state.updateDeficationRarely(false)
+                state.updateDeficationNorm(false)
+                state.updateDeficationLack(false)
+            }
+            "Нет" -> {
+                state.updateDeficationLack(true)
+                state.updateDeficationOften(false)
                 state.updateDeficationRarely(false)
                 state.updateDeficationNorm(false)
             }

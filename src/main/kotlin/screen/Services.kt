@@ -179,6 +179,7 @@ fun newServiceAdder(
                             textAlign = TextAlign.Start,
                             fontSize = 18.sp
                         )
+                        val priceRegex = Regex("\\d*-?\\d*")
                         TextField(
                             value = when (count) {
                                 0 -> {
@@ -196,7 +197,7 @@ fun newServiceAdder(
                                     }
 
                                     else -> {
-                                        servicesState.updatePrice(it)
+                                        if (priceRegex.matches(it)) servicesState.updatePrice(it)
                                     }
                                 }
                             },

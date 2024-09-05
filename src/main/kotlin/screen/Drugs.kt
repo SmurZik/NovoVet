@@ -181,6 +181,7 @@ fun newDrugAdder(
                             textAlign = TextAlign.Start,
                             fontSize = 18.sp
                         )
+                        val priceRegex = Regex("\\d*")
                         TextField(
                             value = when (count) {
                                 0 -> {
@@ -206,7 +207,7 @@ fun newDrugAdder(
                                     }
 
                                     else -> {
-                                        drugsState.updatePrice(it)
+                                        if (priceRegex.matches(it)) drugsState.updatePrice(it)
                                     }
                                 }
                             },

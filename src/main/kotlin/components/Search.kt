@@ -98,10 +98,12 @@ fun search(state: State, expanded: Boolean, onExpandedChange: (Boolean) -> Unit)
                 )
             }
         }
+        val onlyRussianLetter = Regex("[а-яА-Я]*")
+        val onlyEnglishLetter = Regex("[a-zA-Z]*")
         TextField(
             value = state.searchText(),
             onValueChange = {
-                state.updateSearchText(it)
+                if (onlyRussianLetter.matches(it) || onlyEnglishLetter.matches(it)) state.updateSearchText(it)
             },
             label = { Text("Введите слово для поиска") },
             modifier = Modifier.width(290.dp).height(50.dp)
