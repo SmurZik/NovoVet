@@ -51,7 +51,7 @@ fun app() {
     val vaccineState = StateWrapper().initialVaccineState()
 
     Box(
-        modifier = Modifier.fillMaxHeight().fillMaxWidth(0.001f)/*width(320.dp)*/.background(color = Color.LightGray)
+        modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().background(color = Color.Cyan)
@@ -60,7 +60,6 @@ fun app() {
                 text = "Лечебная деятельность",
                 fontSize = 20.sp,
                 modifier = Modifier.padding(all = 8.dp)
-
             )
             for (i in 0..2) {
                 Row(
@@ -175,7 +174,7 @@ fun app() {
         )
     }
     Row(
-        modifier = Modifier.padding(start = /*320.dp*/ 4.dp).background(color = Color.LightGray).fillMaxWidth().height(40.dp)
+        modifier = Modifier.padding(start = 320.dp).background(color = Color.LightGray).fillMaxWidth().height(40.dp)
     ) {
         tabState.tabs().forEach {
             Button(
@@ -207,7 +206,7 @@ fun app() {
             }
         }
     }
-    Box(modifier = Modifier.padding(start = /*320.dp*/ 4.dp, top = 40.dp).fillMaxSize()) {
+    Box(modifier = Modifier.padding(start = 320.dp, top = 40.dp).fillMaxSize()) {
         customNavigationHost(
             navController = navController,
             shareDataState = shareDataState,
