@@ -363,6 +363,7 @@ class DataImpl {
             if (illnessHistoryState.deficationNorm()) "Нормальная"
             else if (illnessHistoryState.deficationRarely()) "Неоформленная (редко)"
             else if (illnessHistoryState.deficationOften()) "Неоформленная (часто)"
+            else if (illnessHistoryState.deficationLack()) "Нет"
             else ""
         val urination =
             if (illnessHistoryState.urinationNorm()) "Нормальное"
@@ -624,6 +625,16 @@ class DataImpl {
                     price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
                 }
             }
+        }
+        when (price.toString().last()) {
+            '1' -> price += 4
+            '2' -> price += 3
+            '3' -> price += 2
+            '4' -> price += 1
+            '6' -> price += 4
+            '7' -> price += 3
+            '8' -> price += 2
+            '9' -> price += 1
         }
         return price
     }

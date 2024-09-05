@@ -82,6 +82,7 @@ class IllnessHistoryState {
     private var deficationNorm by mutableStateOf(false)
     private var deficationRarely by mutableStateOf(false)
     private var deficationOften by mutableStateOf(false)
+    private var deficationLack by mutableStateOf(false)
 
     private var urinationNorm by mutableStateOf(false)
     private var urinationLack by mutableStateOf(false)
@@ -195,6 +196,12 @@ class IllnessHistoryState {
     }
 
     fun deficationOften(): Boolean = deficationOften
+
+    fun updateDeficationLack(value: Boolean) {
+        deficationLack = value
+    }
+
+    fun deficationLack(): Boolean = deficationLack
 
     fun updateVomitNo(value: Boolean) {
         vomitNo = value
