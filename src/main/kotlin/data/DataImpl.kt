@@ -9,7 +9,7 @@ import kotlin.math.ceil
 
 class DataImpl {
     private val connection: Connection =
-        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
+        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "Camur2403_")
 
     fun getOutpatientCard(search: String, searchBy: String, date: java.util.Date): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
