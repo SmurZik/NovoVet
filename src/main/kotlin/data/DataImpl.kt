@@ -174,7 +174,7 @@ class DataImpl {
         return dates
     }
 
-    suspend fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
+    fun getInfoByPetId(data: Pair<Int, String>): Pair<Pair<List<String>, List<String>>, Pair<Int, Int>> {
         if (data.first == 0) return Pair(Pair(listOf(), listOf()), 0 to 0)
         val searchByNickname = "select nickname, kind, breed, male, age, vac, vacDate from pet where id = ${data.first}"
         val searchByNicknameQuery = connection.prepareStatement(searchByNickname)
