@@ -1200,7 +1200,7 @@ fun priceDialog(
                             val doc = com.itextpdf.text.Document()
                             val bf =
                                 BaseFont.createFont(
-                                    "/home/smurz/Загрузки/Arial.ttf",
+                                    "C:\\Windows\\Fonts\\Arial.ttf",
                                     BaseFont.IDENTITY_H,
                                     BaseFont.EMBEDDED
                                 )
@@ -1209,7 +1209,7 @@ fun priceDialog(
                                 val writer = PdfWriter.getInstance(
                                     doc,
                                     FileOutputStream(
-                                        "/home/smurz/new/${
+                                        "C://new//${
                                             illnessHistoryState.visit()[14].split(" ")[0]
                                         }_${petInfoState.nickname()}.pdf"
                                     )
@@ -1354,7 +1354,7 @@ fun priceDialog(
                             textPart.setText(text1)
                             val attachmentPart = MimeBodyPart()
                             attachmentPart.attachFile(
-                                File("/home/smurz/new/${illnessHistoryState.visit()[14]}_${petInfoState.nickname()}.pdf")
+                                File("C://new//${illnessHistoryState.visit()[14]}_${petInfoState.nickname()}.pdf")
                             )
                             val multipart = MimeMultipart()
                             multipart.addBodyPart(textPart)
@@ -1362,7 +1362,7 @@ fun priceDialog(
                             message.setContent(multipart)
                             message.addRecipient(
                                 Message.RecipientType.TO,
-                                InternetAddress("appadvert66@gmail.com")
+                                InternetAddress("novovetget@gmail.com")
                             )
                             message.sentDate = Date()
                             val transport = Mail().session.getTransport("smtp")
@@ -1421,7 +1421,7 @@ fun priceDialog(
                             val bf =
                                 BaseFont.createFont(
                                     /*"C:\\Windows\\Fonts\\Arial.ttf"*/
-                                    "/home/smurz/Загрузки/Arial.ttf",
+                                    "C:\\Windows\\Fonts\\Arial.ttf",
                                     BaseFont.IDENTITY_H,
                                     BaseFont.EMBEDDED
                                 )
@@ -1431,7 +1431,7 @@ fun priceDialog(
                                     doc,
                                     FileOutputStream(
                                         /*C://new// */
-                                        "/home/smurz/new/${
+                                        "C://new//${
                                             illnessHistoryState.visit()[14].split(" ")[0]
                                         }_${petInfoState.nickname()}.pdf"
                                     )
@@ -1554,7 +1554,7 @@ fun priceDialog(
                             }
                             val message = MimeMessage(Mail().session)
                             /*novovetget@gmail.com*/
-                            message.setFrom(InternetAddress("appadvert66@gmail.com"))
+                            message.setFrom(InternetAddress("novovetget@gmail.com"))
                             var text1 = ""
                             var sum = 0
                             illnessHistoryState.completedPair().first.forEach {
@@ -1572,7 +1572,7 @@ fun priceDialog(
                             val attachmentPart = MimeBodyPart()
                             attachmentPart.attachFile(
                                 /*C://new// */
-                                File("/home/smurz/new/${illnessHistoryState.visit()[14]}_${petInfoState.nickname()}.pdf")
+                                File("C://new//${illnessHistoryState.visit()[14]}_${petInfoState.nickname()}.pdf")
                             )
                             val multipart = MimeMultipart()
                             multipart.addBodyPart(textPart)
