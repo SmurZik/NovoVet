@@ -383,7 +383,7 @@ fun newClientAdder(
                             illnessHistoryState.updateCompletedPair(
                                 Pair(
                                     listOf("Услуга"),
-                                    Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
+                                    listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")))
                                 )
                             )
                             illnessHistoryState.clearMeasures(listOf(""))
