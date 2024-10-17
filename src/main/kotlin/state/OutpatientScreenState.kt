@@ -23,6 +23,29 @@ class OutpatientScreenState: State {
     private var confirmedPrice by mutableStateOf(false)
     private var containPrice by mutableStateOf(false)
 
+    private var manualVaccineAdder by mutableStateOf(false)
+
+    private var vaccine by mutableStateOf(Constant.EMPTY)
+    private var vaccineDate by mutableStateOf(Constant.EMPTY)
+
+    fun updateVaccine(value: String) {
+        vaccine = value
+    }
+
+    fun vaccine(): String = vaccine
+
+    fun updateVaccineDate(value: String) {
+        vaccineDate = value
+    }
+
+    fun vaccineDate(): String = vaccineDate
+
+    fun updateManualVaccineAdder(value: Boolean) {
+        manualVaccineAdder = value
+    }
+
+    fun manualVaccineAdder() = manualVaccineAdder
+
     fun updateContainPrice(value: Boolean) {
         containPrice = value
     }

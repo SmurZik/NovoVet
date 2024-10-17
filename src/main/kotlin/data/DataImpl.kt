@@ -11,7 +11,11 @@ class DataImpl {
     private val connection: Connection =
         DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "Camur2403_")
 
-    fun getOutpatientCard(search: String, searchBy: String, date: java.util.Date): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
+    fun getOutpatientCard(
+        search: String,
+        searchBy: String,
+        date: java.util.Date
+    ): Pair<Pair<List<String>, List<Int>>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Стоимость")
         val clientIds = mutableListOf<Int>()
         var countLines = 1
@@ -56,7 +60,11 @@ class DataImpl {
         return Pair(Pair(currentNote, clientIds), Pair(countLines, petIds))
     }
 
-    fun getVaccineJournal(search: String, searchBy: String, date: java.util.Date): Pair<List<String>, Pair<Int, List<Int>>> {
+    fun getVaccineJournal(
+        search: String,
+        searchBy: String,
+        date: java.util.Date
+    ): Pair<List<String>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Дата", "Клиент", "Питомец", "Название вакцины")
         var countLines = 1
         val visitIds = mutableListOf<Int>()
@@ -353,6 +361,7 @@ class DataImpl {
         val appetite =
             if (illnessHistoryState.appetiteSave()) "Сохранен"
             else if (illnessHistoryState.appetiteLack()) "Отсутствует"
+            else if (illnessHistoryState.appetiteRarely()) "Снижен"
             else ""
         val vomit =
             if (illnessHistoryState.vomitNo()) "Нет"
@@ -510,14 +519,18 @@ class DataImpl {
         return measure
     }
 
-    fun getServiceByFirstLetter(name: String): List<String> {
+    fun getServiceByFirstLetter(name: String, vaccine: Boolean): List<String> {
         val services = mutableListOf<String>()
         val getServices =
             "select name from services where name REGEXP '$name'"
         val query = connection.prepareStatement(getServices)
         val result = query.executeQuery()
         while (result.next()) {
-            services.add(result.getString(1))
+            if (!vaccine) {
+                services.add(result.getString(1))
+            } else if (vaccine && result.getString(1).contains(Regex("акцинация"))) {
+                services.add(result.getString(1))
+            }
         }
         return services
     }
@@ -558,16 +571,30 @@ class DataImpl {
         return Pair(Pair(clientIds, currentNote), countLines)
     }
 
-    fun addCompleted(service: String, drugs: List<String>, amounts: List<String>, visitId: Int, servicePrice: String) {
+    fun addCompleted(
+        service: String,
+        drugs: List<String>,
+        amounts: List<String>,
+        visitId: Int,
+        servicePrice: String,
+        ownerDrug: List<String>
+    ) {
         val setNewCompleted =
-            "insert into completed (service, drugs, amounts, visitId, servicePrice) values ('$service', '$drugs', '$amounts', $visitId, '$servicePrice');"
+            "insert into completed (service, drugs, amounts, visitId, servicePrice, ownerDrug) values ('$service', '$drugs', '$amounts', $visitId, '$servicePrice', '$ownerDrug');"
         val setNewCompletedQuery = connection.prepareStatement(setNewCompleted)
         setNewCompletedQuery.execute()
     }
 
-    fun editCompleted(service: String, drugs: List<String>, amounts: List<String>, id: Int, servicePrice:String) {
+    fun editCompleted(
+        service: String,
+        drugs: List<String>,
+        amounts: List<String>,
+        id: Int,
+        servicePrice: String,
+        ownerDrug: List<String>
+    ) {
         val editCompleted =
-            "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts', servicePrice = '$servicePrice' where id = $id"
+            "update completed set service = '$service', drugs = '$drugs', amounts = '$amounts', servicePrice = '$servicePrice', ownerDrug = '$ownerDrug' where id = $id"
         val editCompletedQuery = connection.prepareStatement(editCompleted)
         editCompletedQuery.execute()
     }
@@ -584,7 +611,15 @@ class DataImpl {
         return price
     }
 
-    fun getPrice(service: List<String>, drugs: List<List<String>>, amounts: List<List<String>>, visitId: Int, add: Boolean, priceSum: Int): Int {
+    fun getPrice(
+        service: List<String>,
+        drugs: List<List<String>>,
+        amounts: List<List<String>>,
+        visitId: Int,
+        add: Boolean,
+        priceSum: Int,
+        ownerDrugs: List<List<String>>
+    ): Int {
         var price = 0
         if (!add) {
             service.forEach {
@@ -616,13 +651,15 @@ class DataImpl {
         }
         drugs.forEachIndexed { index, strings ->
             strings.forEachIndexed { secondIndex, name ->
-                val getPrice =
-                    "select price from drugs where name = '$name' limit 1"
-                val getPriceQuery = connection.prepareStatement(getPrice)
-                val result = getPriceQuery.executeQuery()
-                while (result.next()) {
+                if (ownerDrugs[index][secondIndex] != "true") {
+                    val getPrice =
+                        "select price from drugs where name = '$name' limit 1"
+                    val getPriceQuery = connection.prepareStatement(getPrice)
+                    val result = getPriceQuery.executeQuery()
+                    while (result.next()) {
 
-                    price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
+                        price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
+                    }
                 }
             }
         }
@@ -656,7 +693,7 @@ class DataImpl {
         var countLines = 0
         val ids = mutableListOf<Int>()
         val getCompleted =
-            "select service, drugs, amounts, id from completed where visitId = $visitId"
+            "select service, drugs, amounts, ownerDrug, id from completed where visitId = $visitId"
         val getCompletedQuery = connection.prepareStatement(getCompleted)
         val result = getCompletedQuery.executeQuery()
         while (result.next()) {
@@ -664,7 +701,8 @@ class DataImpl {
             completion.add(result.getString(1))
             completion.add(result.getString(2))
             completion.add(result.getString(3))
-            ids.add(result.getInt(4))
+            completion.add(result.getString(4))
+            ids.add(result.getInt(5))
         }
         return completion to Pair(countLines, ids)
     }
@@ -672,19 +710,27 @@ class DataImpl {
     fun parseCompleted(
         completion: List<String>,
         count: Int
-    ): Pair<List<String>, Pair<List<List<String>>, List<List<String>>>> {
+    ): Pair<List<String>, List<List<List<String>>>> {
         val services = mutableListOf<String>()
         val drugs = mutableListOf<List<String>>()
         val amounts = mutableListOf<List<String>>()
+        val ownerDrugs = mutableListOf<List<String>>()
         services.add("Услуга")
         drugs.add(listOf("Препараты"))
         amounts.add(listOf("Количество"))
+        ownerDrugs.add(listOf("Своё"))
         for (i in 1..count) {
-            services.add(completion[0 + (i - 1) * 3])
-            drugs.add(completion[1 + (i - 1) * 3].drop(1).dropLast(1).split(", "))
-            amounts.add(completion[2 + (i - 1) * 3].drop(1).dropLast(1).split(", "))
-
+            services.add(completion[0 + (i - 1) * 4])
+            drugs.add(completion[1 + (i - 1) * 4].drop(1).dropLast(1).split(", "))
+            amounts.add(completion[2 + (i - 1) * 4].drop(1).dropLast(1).split(", "))
+            ownerDrugs.add(completion[3 + (i - 1) * 4].drop(1).dropLast(1).split(", "))
         }
-        return Pair(services, drugs to amounts)
+        var tempOwnerDrugs = ownerDrugs.toMutableList()
+        drugs.forEachIndexed { index, list ->
+            if (list.size > ownerDrugs[index].size) {
+                tempOwnerDrugs[index] = MutableList(list.size - ownerDrugs[index].size + 1) { "false" }
+            }
+        }
+        return Pair(services, listOf(drugs, amounts, tempOwnerDrugs))
     }
 }

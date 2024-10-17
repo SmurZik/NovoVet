@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.itextpdf.text.DocumentException
 import com.itextpdf.text.Font
 import com.itextpdf.text.Phrase
@@ -33,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import navcontroller.NavController
+import navcontroller.Screen
+import org.jetbrains.skia.Data
 import state.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -55,6 +58,10 @@ fun buildOutpatientCard(
     clientInfoState: ClientInfoState,
     outpatientScreenState: OutpatientScreenState
 ) {
+
+    if (outpatientScreenState.manualVaccineAdder()) {
+        manualVaccineAdder(outpatientScreenState, illnessHistoryState, clientInfoState, petInfoState)
+    }
     var firstNote by remember { mutableStateOf(false) }
 
     val labels2 = listOf("Кличка", "Вид", "Порода", "Пол", "Возраст")
@@ -163,7 +170,7 @@ fun buildOutpatientCard(
                 Text(
                     if (petInfoState.vac() != "") petInfoState.vac() else "Пусто",
                     fontSize = 18.sp,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp).width(350.dp)
                 )
             }
             if (petInfoState.vac() != "") {
@@ -174,7 +181,20 @@ fun buildOutpatientCard(
                         modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
                     )
                 }
-                // вакцина не на визит, а на питомца
+            } else {
+                item {
+                    Button(
+                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
+                        onClick = {
+                            outpatientScreenState.updateManualVaccineAdder(true)
+                            outpatientScreenState.updateVaccineDate("")
+                            outpatientScreenState.updateVaccine("")
+                        }
+                    ) {
+                        Text("Добавить дату вакцинации вручную")
+                    }
+                }
             }
         }
         Box(
@@ -218,6 +238,190 @@ fun buildOutpatientCard(
         }
     }
 
+}
+
+@Composable
+fun manualVaccineAdder(
+    outpatientScreenState: OutpatientScreenState,
+    illnessHistoryState: IllnessHistoryState,
+    clientInfoState: ClientInfoState,
+    petInfoState: PetInfoState
+) {
+    Card(
+        modifier = Modifier.padding(start = 450.dp, top = 100.dp).zIndex(1f)
+    ) {
+        Box(
+            modifier = Modifier
+                .background(color = Color(176, 224, 230))
+                .width(700.dp)
+                .height(600.dp)
+                .wrapContentWidth(Alignment.CenterHorizontally)
+        ) {
+            Row {
+                Text(
+                    text = "Введите данные о вакцинации: ",
+                    modifier = Modifier.padding(top = 35.dp, start = 30.dp),
+                    fontSize = 20.sp,
+                    fontStyle = FontStyle.Italic
+                )
+
+                Button(
+                    modifier = Modifier.padding(top = 20.dp, start = 300.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
+                    onClick = {
+                        outpatientScreenState.updateManualVaccineAdder(false)
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Close"
+                    )
+                }
+            }
+
+            val labels = listOf("Название вакцины", "Дата вакцинирования")
+            val hints = listOf("Название вакцины", "дд.мм.гггг")
+
+            LazyColumn(
+                modifier = Modifier
+                    .padding(top = 80.dp, start = 50.dp, end = 8.dp)
+                    .background(color = Color(64, 224, 208), shape = RoundedCornerShape(16.dp))
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .padding(4.dp)
+                    ) {
+                        Text(
+                            labels[0] + ": ",
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(start = 4.dp)
+                                .align(Alignment.CenterVertically),
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp
+                        )
+                        val serviceFindRussian = Regex("[[а-яА-Я]*[a-zA-Z]* *,*/*(*)*:*\\d*\\+*]*")
+                        val serviceFindEnglish = Regex("[[a-zA-Z]* *,*/*(*)*:*\\d*\\+*]*")
+                        TextField(
+                            value = outpatientScreenState.vaccine(),
+                            placeholder = {
+                                Text(hints[0])
+                            },
+                            textStyle = TextStyle.Default.copy(fontSize = 18.sp),
+                            onValueChange = {
+                                if (serviceFindEnglish.matches(it) || serviceFindRussian.matches(it)) {
+                                    outpatientScreenState.updateVaccine(it)
+                                    illnessHistoryState.updateSearchingService(true)
+                                    if (it != "" && !it.contains('(') && !it.contains(')')) {
+                                        illnessHistoryState.updateServicesList(
+                                            DataImpl().getServiceByFirstLetter(
+                                                it,
+                                                true
+                                            )
+                                        )
+                                    } else {
+                                        illnessHistoryState.updateSearchingService(false)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.width(400.dp),
+                        )
+
+                        DropdownMenu(
+                            focusable = false,
+                            expanded = illnessHistoryState.searchingService(),
+                            onDismissRequest = {
+                                illnessHistoryState.updateSearchingService(false)
+                            },
+                            modifier = Modifier.background(color = Color(250, 240, 230))
+                        ) {
+                            Column(
+                                modifier = Modifier.width(400.dp)
+                            ) {
+                                illnessHistoryState.servicesList().forEach {
+                                    Text(
+                                        text = it,
+                                        textAlign = TextAlign.Start,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(vertical = 4.dp, horizontal = 4.dp)
+                                            .clickable {
+                                                outpatientScreenState.updateVaccine(it)
+                                                illnessHistoryState.updateSearchingService(false)
+                                            }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .padding(4.dp)
+                    ) {
+                        Text(
+                            labels[1] + ": ",
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(8.dp)
+                                .align(Alignment.CenterVertically),
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp
+                        )
+                        TextField(
+                            value = outpatientScreenState.vaccineDate(),
+                            onValueChange = {
+                                outpatientScreenState.updateVaccineDate(it)
+                            },
+                            modifier = Modifier
+                                .width(400.dp),
+                            placeholder = {
+                                Text(hints[1])
+                            },
+                            singleLine = true,
+                            textStyle = TextStyle.Default.copy(fontSize = 18.sp)
+                        )
+                    }
+                }
+            }
+            Box(
+                modifier = Modifier.width(700.dp)
+            ) {
+                Button(
+                    onClick = {
+                        val dateRegex = Regex("\\d{2}\\.\\d{2}\\.\\d{4}")
+                        if (outpatientScreenState.vaccineDate() != "" && outpatientScreenState.vaccine() != "" && dateRegex.matches(
+                                outpatientScreenState.vaccineDate()
+                            )
+                        ) {
+                            val client =
+                                clientInfoState.secondName() + " " + clientInfoState.firstName() + " " + clientInfoState.lastName()
+                            DataImpl().setVacInfo(
+                                info = outpatientScreenState.vaccine(),
+                                date = outpatientScreenState.vaccineDate() + " 00:00:00",
+                                petId = illnessHistoryState.id(),
+                                client = client,
+                                pet = petInfoState.nickname(),
+                                visitId = illnessHistoryState.visitId()
+                            )
+                            petInfoState.updateVac(outpatientScreenState.vaccine())
+                            petInfoState.updateVacDate(outpatientScreenState.vaccineDate())
+                            outpatientScreenState.updateManualVaccineAdder(false)
+                        } else {
+                            outpatientScreenState.updateVaccineDate("")
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.Center).padding(top = 500.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray)
+                ) {
+                    Text("Добавить")
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -269,13 +473,15 @@ fun buildVisitNote(
         illnessHistoryState.updateCompletedPair(DataImpl().parseCompleted(tempCompleted, countLines))
         illnessHistoryState.updateCountLines(countLines)
         illnessHistoryState.updateCompletedIds(completedIds)
+
         val price = DataImpl().getPrice(
             illnessHistoryState.completedPair().first,
-            illnessHistoryState.completedPair().second.first,
-            illnessHistoryState.completedPair().second.second,
+            illnessHistoryState.completedPair().second[0],
+            illnessHistoryState.completedPair().second[1],
             illnessHistoryState.visitId(),
             false,
-            illnessHistoryState.price()
+            illnessHistoryState.price(),
+            illnessHistoryState.completedPair().second[2]
         )
         illnessHistoryState.updatePrice(price)
     }
@@ -319,9 +525,10 @@ fun buildVisitNote(
                     illnessHistoryState.updateCompletedPair(
                         Pair(
                             listOf("Услуга"),
-                            Pair(listOf(listOf("Препараты")), listOf(listOf("Количество")))
+                            listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")), listOf(listOf("Своё")))
                         )
                     )
+                    illnessHistoryState.updateOwnerDrugs("false")
                     illnessHistoryState.updateCountLines(0)
                     illnessHistoryState.updatePrice(0)
                 },
@@ -627,7 +834,7 @@ fun buildExamination(
                                 Text(visit[it + 11], fontSize = 18.sp, modifier = Modifier.padding(all = 8.dp))
                             } else {
                                 val tempMeasures = mutableListOf<MutableList<String>>()
-                                illnessHistoryState.completedPair().second.first.forEachIndexed { index, drugs ->
+                                illnessHistoryState.completedPair().second[0].forEachIndexed { index, drugs ->
                                     tempMeasures.add(mutableListOf())
                                     drugs.forEach { drug ->
                                         tempMeasures[index].add(DataImpl().getMeasure(drug))
@@ -652,10 +859,10 @@ fun buildExamination(
                                                 modifier = Modifier.width(400.dp)
                                                     .wrapContentWidth(Alignment.CenterHorizontally)
                                             ) {
-                                                for (i in 1..illnessHistoryState.completedPair().second.first[row - 1].size) {
+                                                for (i in 1..illnessHistoryState.completedPair().second[0][row - 1].size) {
                                                     Text(
                                                         modifier = Modifier.fillMaxWidth(),
-                                                        text = illnessHistoryState.completedPair().second.first[row - 1][i - 1],
+                                                        text = illnessHistoryState.completedPair().second[0][row - 1][i - 1],
                                                         fontSize = 18.sp,
                                                         textAlign = TextAlign.Center
                                                     )
@@ -666,9 +873,9 @@ fun buildExamination(
                                                 modifier = Modifier.width(400.dp)
                                                     .wrapContentWidth(Alignment.CenterHorizontally)
                                             ) {
-                                                for (i in 1..illnessHistoryState.completedPair().second.second[row - 1].size) {
+                                                for (i in 1..illnessHistoryState.completedPair().second[1][row - 1].size) {
                                                     Text(
-                                                        text = illnessHistoryState.completedPair().second.second[row - 1][i - 1] + " " + illnessHistoryState.measureComplex()[row - 1][i - 1],
+                                                        text = illnessHistoryState.completedPair().second[1][row - 1][i - 1] + " " + illnessHistoryState.measureComplex()[row - 1][i - 1],
                                                         fontSize = 18.sp,
                                                         modifier = Modifier.fillMaxWidth(),
                                                         textAlign = TextAlign.Center
@@ -1029,15 +1236,45 @@ fun priceDialog(
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Осмотр", font))
-                                doc.add(com.itextpdf.text.Paragraph("Врачи на приеме: ${illnessHistoryState.visit()[1]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Со слов владельца: ${illnessHistoryState.visit()[2]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Общее состояние: ${illnessHistoryState.visit()[3]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Врачи на приеме: ${illnessHistoryState.visit()[1]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Со слов владельца: ${illnessHistoryState.visit()[2]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Общее состояние: ${illnessHistoryState.visit()[3]}",
+                                        font
+                                    )
+                                )
                                 doc.add(com.itextpdf.text.Paragraph("Вес: ${illnessHistoryState.visit()[4]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Температура: ${illnessHistoryState.visit()[5]}°C", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Температура: ${illnessHistoryState.visit()[5]}°C",
+                                        font
+                                    )
+                                )
                                 doc.add(com.itextpdf.text.Paragraph("Аппетит: ${illnessHistoryState.visit()[6]}", font))
                                 doc.add(com.itextpdf.text.Paragraph("Рвота: ${illnessHistoryState.visit()[7]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Дефекация: ${illnessHistoryState.visit()[8]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Мочеиспускание: ${illnessHistoryState.visit()[9]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Дефекация: ${illnessHistoryState.visit()[8]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Мочеиспускание: ${illnessHistoryState.visit()[9]}",
+                                        font
+                                    )
+                                )
                                 doc.add(
                                     com.itextpdf.text.Paragraph(
                                         "Дополнительная информация: ${illnessHistoryState.visit()[10]}",
@@ -1055,7 +1292,7 @@ fun priceDialog(
                                 doc.add(com.itextpdf.text.Paragraph("Выполнено в клинике:", font))
                                 val table = PdfPTable(3)
                                 table.totalWidth = 260f
-                                illnessHistoryState.completedPair().second.first.forEachIndexed() { index, drugs ->
+                                illnessHistoryState.completedPair().second[0].forEachIndexed() { index, drugs ->
                                     var newText: String
                                     drugs.forEachIndexed { drugIndex, s ->
                                         newText = if (drugIndex == 0) {
@@ -1070,7 +1307,7 @@ fun priceDialog(
                                         table.addCell(drugCell)
                                         val amountCell = PdfPCell(
                                             Phrase(
-                                                "${illnessHistoryState.completedPair().second.second[index][drugIndex]} $measure",
+                                                "${illnessHistoryState.completedPair().second[1][index][drugIndex]} $measure",
                                                 font
                                             )
                                         )
@@ -1080,7 +1317,12 @@ fun priceDialog(
                                 }
                                 doc.add(table)
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
-                                doc.add(com.itextpdf.text.Paragraph("Рекомендации: ${illnessHistoryState.visit()[13]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Рекомендации: ${illnessHistoryState.visit()[13]}",
+                                        font
+                                    )
+                                )
                                 doc.add(
                                     com.itextpdf.text.Paragraph(
                                         "Стоимость: ${illnessHistoryState.price()}",
@@ -1156,7 +1398,8 @@ fun priceDialog(
                                 recommendations = illnessHistoryState.recommendations(),
                                 illnessHistoryState = illnessHistoryState
                             )
-                            val info = DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
+                            val info =
+                                DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
                             illnessHistoryState.updateVisit(info.first.second)
                             illnessHistoryState.completedPair().first.forEach {
                                 if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
@@ -1215,15 +1458,45 @@ fun priceDialog(
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Осмотр", font))
-                                doc.add(com.itextpdf.text.Paragraph("Врачи на приеме: ${illnessHistoryState.visit()[1]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Со слов владельца: ${illnessHistoryState.visit()[2]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Общее состояние: ${illnessHistoryState.visit()[3]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Врачи на приеме: ${illnessHistoryState.visit()[1]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Со слов владельца: ${illnessHistoryState.visit()[2]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Общее состояние: ${illnessHistoryState.visit()[3]}",
+                                        font
+                                    )
+                                )
                                 doc.add(com.itextpdf.text.Paragraph("Вес: ${illnessHistoryState.visit()[4]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Температура: ${illnessHistoryState.visit()[5]}°C", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Температура: ${illnessHistoryState.visit()[5]}°C",
+                                        font
+                                    )
+                                )
                                 doc.add(com.itextpdf.text.Paragraph("Аппетит: ${illnessHistoryState.visit()[6]}", font))
                                 doc.add(com.itextpdf.text.Paragraph("Рвота: ${illnessHistoryState.visit()[7]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Дефекация: ${illnessHistoryState.visit()[8]}", font))
-                                doc.add(com.itextpdf.text.Paragraph("Мочеиспускание: ${illnessHistoryState.visit()[9]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Дефекация: ${illnessHistoryState.visit()[8]}",
+                                        font
+                                    )
+                                )
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Мочеиспускание: ${illnessHistoryState.visit()[9]}",
+                                        font
+                                    )
+                                )
                                 doc.add(
                                     com.itextpdf.text.Paragraph(
                                         "Дополнительная информация: ${illnessHistoryState.visit()[10]}",
@@ -1241,7 +1514,7 @@ fun priceDialog(
                                 doc.add(com.itextpdf.text.Paragraph("Выполнено в клинике:", font))
                                 val table = PdfPTable(3)
                                 table.totalWidth = 260f
-                                illnessHistoryState.completedPair().second.first.forEachIndexed() { index, drugs ->
+                                illnessHistoryState.completedPair().second[0].forEachIndexed() { index, drugs ->
                                     var newText: String
                                     drugs.forEachIndexed { drugIndex, s ->
                                         newText = if (drugIndex == 0) {
@@ -1256,7 +1529,7 @@ fun priceDialog(
                                         table.addCell(drugCell)
                                         val amountCell = PdfPCell(
                                             Phrase(
-                                                "${illnessHistoryState.completedPair().second.second[index][drugIndex]} $measure",
+                                                "${illnessHistoryState.completedPair().second[1][index][drugIndex]} $measure",
                                                 font
                                             )
                                         )
@@ -1266,7 +1539,12 @@ fun priceDialog(
                                 }
                                 doc.add(table)
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
-                                doc.add(com.itextpdf.text.Paragraph("Рекомендации: ${illnessHistoryState.visit()[13]}", font))
+                                doc.add(
+                                    com.itextpdf.text.Paragraph(
+                                        "Рекомендации: ${illnessHistoryState.visit()[13]}",
+                                        font
+                                    )
+                                )
                                 doc.close()
                                 writer.close()
                             } catch (e: DocumentException) {
@@ -1360,7 +1638,7 @@ fun buildBiggerNote(
                 illnessHistoryState.updateCountLines(countLines)
                 illnessHistoryState.updateCompletedIds(completedIds)
                 val tempMeasures = mutableListOf<MutableList<String>>()
-                illnessHistoryState.completedPair().second.first.forEachIndexed { index, it ->
+                illnessHistoryState.completedPair().second[0].forEachIndexed { index, it ->
                     tempMeasures.add(mutableListOf())
                     it.forEach {
                         tempMeasures[index].add(DataImpl().getMeasure(it))
@@ -1377,8 +1655,9 @@ fun buildBiggerNote(
                             .background(color = Color(250, 240, 230))
                             .clickable {
                                 illnessHistoryState.updateService(illnessHistoryState.completedPair().first[row])
-                                illnessHistoryState.clearDrugs(illnessHistoryState.completedPair().second.first[row])
-                                illnessHistoryState.clearAmounts(illnessHistoryState.completedPair().second.second[row])
+                                illnessHistoryState.clearDrugs(illnessHistoryState.completedPair().second[0][row])
+                                illnessHistoryState.clearAmounts(illnessHistoryState.completedPair().second[1][row])
+                                illnessHistoryState.clearOwnerDrugs(illnessHistoryState.completedPair().second[2][row])
                                 illnessHistoryState.updateDrugCount(illnessHistoryState.drugs().size)
                                 illnessHistoryState.updateCompletedId(illnessHistoryState.completedIds()[row - 1])
                                 illnessHistoryState.updatePriceTemplate(DataImpl().getServicePrice(illnessHistoryState.service()))
@@ -1411,7 +1690,7 @@ fun buildBiggerNote(
                             modifier = Modifier.width(400.dp).wrapContentWidth(Alignment.CenterHorizontally)
                                 .padding(vertical = 10.dp)
                         ) {
-                            for (str in illnessHistoryState.completedPair().second.first[row]) {
+                            for (str in illnessHistoryState.completedPair().second[0][row]) {
                                 Text(
                                     str,
                                     fontSize = 18.sp,
@@ -1425,7 +1704,7 @@ fun buildBiggerNote(
                             modifier = Modifier.width(400.dp).wrapContentWidth(Alignment.CenterHorizontally)
                                 .padding(vertical = 10.dp)
                         ) {
-                            illnessHistoryState.completedPair().second.second[row].forEachIndexed { index, str ->
+                            illnessHistoryState.completedPair().second[1][row].forEachIndexed { index, str ->
                                 var adText = ""
                                 adText = try {
                                     illnessHistoryState.measureComplex()[row][index]
@@ -1473,11 +1752,12 @@ fun buildBiggerNote(
                                 illnessHistoryState.updateIsNewVisitInfo(false)
                                 val price = DataImpl().getPrice(
                                     illnessHistoryState.completedPair().first,
-                                    illnessHistoryState.completedPair().second.first,
-                                    illnessHistoryState.completedPair().second.second,
+                                    illnessHistoryState.completedPair().second[0],
+                                    illnessHistoryState.completedPair().second[1],
                                     illnessHistoryState.visitId(),
                                     false,
-                                    illnessHistoryState.price()
+                                    illnessHistoryState.price(),
+                                    illnessHistoryState.completedPair().second[2]
                                 )
                                 illnessHistoryState.updatePrice(price)
                                 DataImpl().updatePrice(price, illnessHistoryState.visitId())
@@ -1646,8 +1926,9 @@ fun buildBiggerNote(
 @Composable
 fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
     Box(
-        modifier = Modifier.padding(start = 100.dp, top = 200.dp).height(700.dp).width(1450.dp)
+        modifier = Modifier.padding(start = 4.dp, top = 200.dp).height(700.dp).width(1550.dp)
             .background(color = Color(176, 224, 230), shape = RoundedCornerShape(4.dp))
+            .border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp))
     ) {
         Column() {
             Row {
@@ -1666,11 +1947,12 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                         illnessHistoryState.updateAmount("")
                         illnessHistoryState.clearDrugs(listOf(""))
                         illnessHistoryState.clearAmounts(listOf(""))
+                        illnessHistoryState.clearOwnerDrugs(listOf("false"))
                         illnessHistoryState.updateServicePrice("")
                         illnessHistoryState.updatePriceTemplate("")
                         illnessHistoryState.updateRangeServicePrice("")
                     },
-                    modifier = Modifier.padding(start = 1150.dp),
+                    modifier = Modifier.padding(start = 1242.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan)
                 ) {
                     Icon(
@@ -1724,6 +2006,18 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                     Text(
                         "Количество",
                         fontSize = 18.sp,
+                        modifier = Modifier.width(300.dp).padding(vertical = 10.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Divider(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight(),
+                        color = Color.Cyan
+                    )
+                    Text(
+                        "Своё",
+                        fontSize = 18.sp,
                         modifier = Modifier.width(400.dp).padding(vertical = 10.dp),
                         textAlign = TextAlign.Center
                     )
@@ -1748,7 +2042,12 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                     illnessHistoryState.updateService(it)
                                     illnessHistoryState.updateSearchingService(true)
                                     if (it != "" && !it.contains('(') && !it.contains(')')) {
-                                        illnessHistoryState.updateServicesList(DataImpl().getServiceByFirstLetter(it))
+                                        illnessHistoryState.updateServicesList(
+                                            DataImpl().getServiceByFirstLetter(
+                                                it,
+                                                false
+                                            )
+                                        )
                                     } else {
                                         illnessHistoryState.updateSearchingService(false)
                                     }
@@ -1836,7 +2135,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                         val drugFindRussian = Regex("[[а-яА-Я]* *,*\\d*(*)*\\-*]*")
                         val drugFindEnglish = Regex("[[a-zA-Z]* *,*\\d*(*)*\\-*]*")
                         items(illnessHistoryState.drugCount()) { count ->
-                            Row() {
+                            Row {
                                 TextField(
                                     placeholder = {
                                         Text("Введите название препарата")
@@ -1904,7 +2203,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                     },
                                     value = illnessHistoryState.amounts()[count],
                                     textStyle = TextStyle.Default.copy(fontSize = 18.sp),
-                                    modifier = Modifier.width(250.dp),
+                                    modifier = Modifier.width(200.dp),
                                     onValueChange = {
                                         if (amount.matches(it)) {
                                             illnessHistoryState.updateSelectedAmount(it, count)
@@ -1918,6 +2217,25 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                     fontSize = 18.sp,
                                     modifier = Modifier.width(100.dp).padding(vertical = 12.dp, horizontal = 8.dp)
                                 )
+
+                                Divider(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .fillMaxHeight(),
+                                    color = Color.Cyan
+                                )
+                                val checked =
+                                    if (count < illnessHistoryState.ownerDrugs().size) illnessHistoryState.ownerDrugs()[count] else "false"
+
+                                val update = if (checked == "true") "false" else "true"
+                                Checkbox(
+                                    checked = checked == "true",
+                                    onCheckedChange = {
+                                        illnessHistoryState.updateCurrentOwnerDrugs(update, count)
+                                    },
+                                    modifier = Modifier.padding(start = 40.dp)
+                                )
+
                             }
                         }
                         if (!illnessHistoryState.searchingDrug()) {
@@ -1928,6 +2246,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                                         illnessHistoryState.updateDrugs("")
                                         illnessHistoryState.updateAmounts("")
                                         illnessHistoryState.updateMeasures("")
+                                        illnessHistoryState.updateOwnerDrugs("false")
                                     },
                                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan)
                                 ) {
@@ -1952,7 +2271,8 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             drugs = illnessHistoryState.drugs(),
                             amounts = illnessHistoryState.amounts(),
                             visitId = illnessHistoryState.visitId(),
-                            servicePrice = illnessHistoryState.servicePrice()
+                            servicePrice = illnessHistoryState.servicePrice(),
+                            ownerDrug = illnessHistoryState.ownerDrugs()
                         )
                     } else {
                         DataImpl().editCompleted(
@@ -1960,7 +2280,8 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                             drugs = illnessHistoryState.drugs(),
                             amounts = illnessHistoryState.amounts(),
                             id = illnessHistoryState.completedId(),
-                            servicePrice = illnessHistoryState.servicePrice()
+                            servicePrice = illnessHistoryState.servicePrice(),
+                            ownerDrug = illnessHistoryState.ownerDrugs()
                         )
                     }
                     val info = DataImpl().getCompleted(illnessHistoryState.visitId())
@@ -1972,11 +2293,12 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                     illnessHistoryState.updateCompletedPair(DataImpl().parseCompleted(tempCompleted, countLines))
                     val price = DataImpl().getPrice(
                         illnessHistoryState.completedPair().first,
-                        illnessHistoryState.completedPair().second.first,
-                        illnessHistoryState.completedPair().second.second,
+                        illnessHistoryState.completedPair().second[0],
+                        illnessHistoryState.completedPair().second[1],
                         illnessHistoryState.visitId(),
                         false,
-                        illnessHistoryState.price()
+                        illnessHistoryState.price(),
+                        illnessHistoryState.completedPair().second[2]
                     )
                     illnessHistoryState.updatePrice(price)
                     DataImpl().updatePrice(price, illnessHistoryState.visitId())
@@ -1988,6 +2310,7 @@ fun newServiceAdder(illnessHistoryState: IllnessHistoryState) {
                     illnessHistoryState.updateAmount("")
                     illnessHistoryState.clearDrugs(listOf(""))
                     illnessHistoryState.clearAmounts(listOf(""))
+                    illnessHistoryState.clearOwnerDrugs(listOf("false"))
                     illnessHistoryState.updateServicePrice("")
                     illnessHistoryState.updateRangeServicePrice("")
                     illnessHistoryState.updatePriceTemplate("")
@@ -2158,7 +2481,7 @@ fun buildOneNote(
                     Checkbox(
                         modifier = Modifier.padding(end = 30.dp),
                         checked = illnessHistoryState.appetiteLack(),
-                        enabled = !illnessHistoryState.appetiteSave(),
+                        enabled = !illnessHistoryState.appetiteSave() && !illnessHistoryState.appetiteRarely(),
                         onCheckedChange = {
                             illnessHistoryState.updateAppetiteLack(it)
                         }
@@ -2170,9 +2493,21 @@ fun buildOneNote(
                     Checkbox(
                         modifier = Modifier.padding(end = 30.dp),
                         checked = illnessHistoryState.appetiteSave(),
-                        enabled = !illnessHistoryState.appetiteLack(),
+                        enabled = !illnessHistoryState.appetiteLack() && !illnessHistoryState.appetiteRarely(),
                         onCheckedChange = {
                             illnessHistoryState.updateAppetiteSave(it)
+                        }
+                    )
+                    Text(
+                        "Снижен",
+                        fontSize = 18.sp
+                    )
+                    Checkbox(
+                        modifier = Modifier.padding(end = 30.dp),
+                        checked = illnessHistoryState.appetiteRarely(),
+                        enabled = !illnessHistoryState.appetiteLack() && !illnessHistoryState.appetiteSave(),
+                        onCheckedChange = {
+                            illnessHistoryState.updateAppetiteRarely(it)
                         }
                     )
                 }

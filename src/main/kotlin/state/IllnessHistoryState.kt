@@ -45,10 +45,8 @@ class IllnessHistoryState {
     private var completedId by mutableStateOf(0)
     private var completedPair by mutableStateOf(
         Pair(
-            listOf<String>(), Pair(
-                listOf(listOf<String>()), listOf(
-                    listOf<String>()
-                )
+            listOf<String>(), listOf(
+                listOf(listOf<String>())
             )
         )
     )
@@ -74,6 +72,7 @@ class IllnessHistoryState {
 
     private var appetiteLack by mutableStateOf(false)
     private var appetiteSave by mutableStateOf(false)
+    private var appetiteRarely by mutableStateOf(false)
 
     private var vomitNo by mutableStateOf(false)
     private var vomitYesRarely by mutableStateOf(false)
@@ -102,6 +101,24 @@ class IllnessHistoryState {
     private var info by mutableStateOf(Pair(Pair(listOf<String>(), listOf<String>()), Pair(0, 0)))
 
     private var loading by mutableStateOf(false)
+
+    private var ownerDrugs by mutableStateOf(listOf<String>())
+
+    fun updateOwnerDrugs(value: String) {
+        ownerDrugs += value
+    }
+
+    fun clearOwnerDrugs(value: List<String>) {
+        ownerDrugs = value
+    }
+
+    fun updateCurrentOwnerDrugs(value: String, index: Int) {
+        val temp = ownerDrugs.toMutableList()
+        temp[index] = value
+        ownerDrugs = temp
+    }
+
+    fun ownerDrugs() = ownerDrugs
 
     fun updateLoading(value: Boolean) {
         loading = value
@@ -233,6 +250,12 @@ class IllnessHistoryState {
 
     fun appetiteSave(): Boolean = appetiteSave
 
+    fun updateAppetiteRarely(value: Boolean) {
+        appetiteRarely = value
+    }
+
+    fun appetiteRarely(): Boolean = appetiteRarely
+
     fun updateFeelingNorm(value: Boolean) {
         feelingNorm = value
     }
@@ -293,11 +316,11 @@ class IllnessHistoryState {
 
     fun completedIds(): List<Int> = completedIds
 
-    fun updateCompletedPair(value: Pair<List<String>, Pair<List<List<String>>, List<List<String>>>>) {
+    fun updateCompletedPair(value: Pair<List<String>, List<List<List<String>>>>) {
         completedPair = value
     }
 
-    fun completedPair(): Pair<List<String>, Pair<List<List<String>>, List<List<String>>>> = completedPair
+    fun completedPair(): Pair<List<String>, List<List<List<String>>>> = completedPair
 
     fun updateCompletedId(value: Int) {
         completedId = value

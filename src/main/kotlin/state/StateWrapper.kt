@@ -122,6 +122,7 @@ class StateWrapper {
         state.updateFeelingVeryHard(false)
         state.updateAppetiteSave(false)
         state.updateAppetiteLack(false)
+        state.updateAppetiteRarely(false)
         state.updateVomitNo(false)
         state.updateVomitYesRarely(false)
         state.updateVomitYesOften(false)
@@ -159,10 +160,17 @@ class StateWrapper {
             "Сохранен" -> {
                 state.updateAppetiteSave(true)
                 state.updateAppetiteLack(false)
+                state.updateAppetiteRarely(false)
             }
             "Отсутствует" -> {
                 state.updateAppetiteLack(true)
                 state.updateAppetiteSave(false)
+                state.updateAppetiteRarely(false)
+            }
+            "Снижен" -> {
+                state.updateAppetiteLack(false)
+                state.updateAppetiteSave(false)
+                state.updateAppetiteRarely(true)
             }
         }
         when (visit[7]) {
