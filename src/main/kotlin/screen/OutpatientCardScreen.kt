@@ -1554,7 +1554,7 @@ fun priceDialog(
                             }
                             val message = MimeMessage(Mail().session)
                             /*novovetget@gmail.com*/
-                            message.setFrom(InternetAddress("novovetget@gmail.com"))
+                            message.setFrom(InternetAddress("novovetsend@gmail.com"))
                             var text1 = ""
                             var sum = 0
                             illnessHistoryState.completedPair().first.forEach {
@@ -1580,7 +1580,7 @@ fun priceDialog(
                             message.setContent(multipart)
                             message.addRecipient(
                                 Message.RecipientType.TO,
-                                InternetAddress("appadvert66@gmail.com")
+                                InternetAddress("novovetget@gmail.com")
                             )
                             message.sentDate = Date()
                             val transport = Mail().session.getTransport("smtp")

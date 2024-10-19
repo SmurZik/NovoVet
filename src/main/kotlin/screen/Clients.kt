@@ -383,10 +383,11 @@ fun newClientAdder(
                             illnessHistoryState.updateCompletedPair(
                                 Pair(
                                     listOf("Услуга"),
-                                    listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")))
+                                    listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")), listOf(listOf("Своё")))
                                 )
                             )
                             illnessHistoryState.clearMeasures(listOf(""))
+                            illnessHistoryState.clearOwnerDrugs(listOf("false"))
                             illnessHistoryState.updateCountLines(0)
                             StateWrapper().clearIllnessHistoryState(illnessHistoryState)
                             clientsScreenState.updateKind("")
