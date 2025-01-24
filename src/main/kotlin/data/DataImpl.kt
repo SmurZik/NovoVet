@@ -9,7 +9,7 @@ import kotlin.math.ceil
 
 class DataImpl {
     private val connection: Connection =
-        DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "Camur2403_")
+        DriverManager.getConnection("jdbc:mysql://192.168.0.100/novo_vet", "test", "camur2403")
 
     fun getOutpatientCard(
         search: String,
@@ -340,7 +340,8 @@ class DataImpl {
         diagnosis: String,
         completed: String,
         recommendations: String,
-        illnessHistoryState: IllnessHistoryState
+        illnessHistoryState: IllnessHistoryState,
+        complete: String
     ) {
         val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm")
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
@@ -381,7 +382,7 @@ class DataImpl {
             else ""
         if (isNew) {
             val setNewVisit =
-                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()}');"
+                "INSERT INTO visit (petId, date, sum, ownerWords, commongFeeling, temperature, appetite, vomit, defication, urination, extra, diagnosis, completed, recommendations, doctors, weight, complete) VALUES ($petId, '$formattedDate', '$sum', '$ownerWords', '$commonFeeling', '$temperature', '$appetite', '$vomit', '$defication', '$urination', '$extra', '$diagnosis', '$completed', '$recommendations', '$doctors', '${illnessHistoryState.weight()}', '$complete');"
             val setVisitQuery = connection.prepareStatement(setNewVisit)
             setVisitQuery.execute()
             var id = 0
@@ -395,7 +396,7 @@ class DataImpl {
             illnessHistoryState.updateVisitId(id)
         } else {
             val updateVisit =
-                "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations', doctors = '$doctors', weight = '${illnessHistoryState.weight()}'  where id = $id;"
+                "update visit set petId = '$petId', date = '$formattedDate', sum = $sum, ownerWords = '$ownerWords', commongFeeling = '$commonFeeling', temperature = '$temperature', appetite = '$appetite', vomit = '$vomit', defication = '$defication', urination = '$urination', extra = '$extra', diagnosis = '$diagnosis', completed = '$completed', recommendations = '$recommendations', doctors = '$doctors', weight = '${illnessHistoryState.weight()}', complete = '$complete'  where id = $id;"
             val setVisitQuery = connection.prepareStatement(updateVisit)
             setVisitQuery.execute()
         }

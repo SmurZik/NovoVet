@@ -555,7 +555,8 @@ fun buildVisitNote(
                             diagnosis = illnessHistoryState.diagnosis(),
                             completed = illnessHistoryState.completed(),
                             recommendations = illnessHistoryState.recommendations(),
-                            illnessHistoryState = illnessHistoryState
+                            illnessHistoryState = illnessHistoryState,
+                            complete = "false"
                         )
                         illnessHistoryState.completedPair().first.forEach {
                             if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
@@ -1048,7 +1049,8 @@ fun buildExamination(
                                     diagnosis = illnessHistoryState.diagnosis(),
                                     completed = illnessHistoryState.completed(),
                                     recommendations = illnessHistoryState.recommendations(),
-                                    illnessHistoryState = illnessHistoryState
+                                    illnessHistoryState = illnessHistoryState,
+                                    complete = "true"
                                 )
                                 illnessHistoryState.completedPair().first.forEach {
                                     if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
@@ -1111,7 +1113,8 @@ fun buildExamination(
                                 diagnosis = illnessHistoryState.diagnosis(),
                                 completed = illnessHistoryState.completed(),
                                 recommendations = illnessHistoryState.recommendations(),
-                                illnessHistoryState = illnessHistoryState
+                                illnessHistoryState = illnessHistoryState,
+                                complete = "true"
                             )
                             illnessHistoryState.completedPair().first.forEach {
                                 if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
@@ -1176,7 +1179,8 @@ fun priceDialog(
                                 diagnosis = illnessHistoryState.diagnosis(),
                                 completed = illnessHistoryState.completed(),
                                 recommendations = illnessHistoryState.recommendations(),
-                                illnessHistoryState = illnessHistoryState
+                                illnessHistoryState = illnessHistoryState,
+                                complete = "true"
                             )
                             val info =
                                 DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
@@ -1396,7 +1400,8 @@ fun priceDialog(
                                 diagnosis = illnessHistoryState.diagnosis(),
                                 completed = illnessHistoryState.completed(),
                                 recommendations = illnessHistoryState.recommendations(),
-                                illnessHistoryState = illnessHistoryState
+                                illnessHistoryState = illnessHistoryState,
+                                complete = "true"
                             )
                             val info =
                                 DataImpl().getInfoByPetId(illnessHistoryState.id() to "${illnessHistoryState.date()}:00")
@@ -1747,7 +1752,8 @@ fun buildBiggerNote(
                                     diagnosis = illnessHistoryState.diagnosis(),
                                     completed = illnessHistoryState.completed(),
                                     recommendations = illnessHistoryState.recommendations(),
-                                    illnessHistoryState = illnessHistoryState
+                                    illnessHistoryState = illnessHistoryState,
+                                    complete = "false"
                                 )
                                 illnessHistoryState.updateIsNewVisitInfo(false)
                                 val price = DataImpl().getPrice(

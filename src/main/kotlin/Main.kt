@@ -54,7 +54,7 @@ fun app() {
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(color = Color.Cyan)
+            modifier = Modifier.fillMaxSize().background(color = Color.LightGray)
         ) {
             Text(
                 text = "Лечебная деятельность",
