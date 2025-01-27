@@ -13,9 +13,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
+import data.CorrectDate
+import data.DataImpl
+import data.Schedule
+import jdk.javadoc.doclet.Reporter
 import navcontroller.*
+import state.HomeViewModel
 import state.State
 import state.StateWrapper
+import java.util.*
 
 @Composable
 fun app() {
@@ -28,6 +34,7 @@ fun app() {
         Screen.ServicesScreen.name to "Услуги",
         Screen.DrugsScreen.name to "Препараты",
         Screen.VaccineScreen.name to "Вакцинации",
+        Screen.AppointmentScreen.name to "Журнал записи",
         Screen.ClientInfoScreen.name to "Клиент: ${
             clientInfoState.secondName() + " " + if (clientInfoState.firstName()
                     .isNotEmpty()
@@ -49,6 +56,7 @@ fun app() {
     val serviceState = StateWrapper().initialServiceState()
     val drugState = StateWrapper().initialDrugState()
     val vaccineState = StateWrapper().initialVaccineState()
+    val homeViewModel = HomeViewModel(CorrectDate.Base(), Calendar.getInstance(), Schedule.Base(), DataImpl())
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
@@ -123,7 +131,7 @@ fun app() {
                 fontSize = 20.sp,
                 modifier = Modifier.padding(all = 8.dp)
             )
-            for (i in 0..2) {
+            for (i in 0..3) {
                 Row(
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp, end = 16.dp).fillMaxWidth().clickable {
                         when (i) {
@@ -132,15 +140,23 @@ fun app() {
                                 tabState.updateActiveTab(Screen.ClientsScreen.name)
                                 navController.navigate(Screen.ClientsScreen.name)
                             }
+
                             1 -> {
                                 tabState.addTab(Screen.DrugsScreen.name)
                                 tabState.updateActiveTab(Screen.DrugsScreen.name)
                                 navController.navigate(Screen.DrugsScreen.name)
                             }
+
                             2 -> {
                                 tabState.addTab(Screen.ServicesScreen.name)
                                 tabState.updateActiveTab(Screen.ServicesScreen.name)
                                 navController.navigate(Screen.ServicesScreen.name)
+                            }
+
+                            3 -> {
+                                tabState.addTab(Screen.AppointmentScreen.name)
+                                tabState.updateActiveTab(Screen.AppointmentScreen.name)
+                                navController.navigate(Screen.AppointmentScreen.name)
                             }
                         }
                     }
@@ -149,7 +165,8 @@ fun app() {
                         painter = when (i) {
                             0 -> painterResource("/person.png")
                             1 -> painterResource("/pills.png")
-                            else -> painterResource("/vet.png")
+                            2 -> painterResource("/service.png")
+                            else -> painterResource("/appointment.png")
                         },
                         contentDescription = "Buttons",
                         modifier = Modifier.size(25.dp, 25.dp)
@@ -158,7 +175,8 @@ fun app() {
                         text = when (i) {
                             0 -> "Владельцы"
                             1 -> "Препараты"
-                            else -> "Услуги"
+                            2 -> "Услуги"
+                            else -> "Журнал записи"
                         },
                         fontSize = 18.sp,
                         letterSpacing = 0.sp,
@@ -174,7 +192,7 @@ fun app() {
         )
     }
     Row(
-        modifier = Modifier.padding(start = 320.dp).background(color = Color.LightGray).fillMaxWidth().height(40.dp)
+        modifier = Modifier.padding(start = 320.dp).background(color = Color(224, 224, 224)).fillMaxWidth().height(40.dp)
     ) {
         tabState.tabs().forEach {
             Button(
@@ -182,7 +200,7 @@ fun app() {
                     navController.navigate(it)
                     tabState.updateActiveTab(it)
                 },
-                colors = ButtonDefaults.buttonColors(backgroundColor = if (tabState.activeTab() == it) Color.Cyan else Color.LightGray),
+                colors = ButtonDefaults.buttonColors(backgroundColor = if (tabState.activeTab() == it) Color.LightGray else Color(224, 224, 224)),
                 modifier = Modifier.fillMaxHeight()
             ) {
                 Text(
@@ -218,7 +236,8 @@ fun app() {
             clientInfoState = clientInfoState,
             servicesState = serviceState,
             drugsState = drugState,
-            vaccineState = vaccineState
+            vaccineState = vaccineState,
+            homeViewModel = homeViewModel
         )
     }
 }

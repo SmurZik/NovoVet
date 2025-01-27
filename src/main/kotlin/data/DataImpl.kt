@@ -328,6 +328,45 @@ class DataImpl {
         }
     }
 
+    fun getSchedule(time: Long, scheduleList: List<String>): List<String> {
+        val scheduleResult = mutableListOf("Время", "Клиент", "Телефон", "Цель посещения", "Занято")
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy")
+        val timeFormat = SimpleDateFormat("HH:mm")
+        val formattedDate = dateFormat.format(java.util.Date(time))
+        var count = 0
+        val checkEmptySchedule =
+            "SELECT date FROM appointment WHERE DATE_FORMAT(date, '%d.%m.%Y') = '$formattedDate'"
+        val checkQuery = connection.prepareStatement(checkEmptySchedule)
+        val checkResult = checkQuery.executeQuery()
+        while (checkResult.next()) {
+            count++
+            break
+        }
+        val formatDate = SimpleDateFormat("dd.MM.yyyy HH:mm")
+        val dateFormatToDB = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS")
+        if (count == 0) {
+            scheduleList.drop(1).forEach {
+                val formattedDateToDB = dateFormatToDB.format(formatDate.parse("$formattedDate $it"))
+                val insertSchedule =
+                    "INSERT INTO appointment (date, client, phoneNumber, goal) VALUES ('$formattedDateToDB', '', '', '')"
+                val insertQuery = connection.prepareStatement(insertSchedule)
+                insertQuery.execute()
+            }
+        }
+        val getSchedule =
+            "SELECT date, client, phoneNumber, goal, busy FROM appointment WHERE DATE_FORMAT(date, '%d.%m.%Y') = '$formattedDate'"
+        val query = connection.prepareStatement(getSchedule)
+        val result = query.executeQuery()
+        while (result.next()) {
+            scheduleResult.add(timeFormat.format(result.getTime(1)))
+            scheduleResult.add(result.getString(2))
+            scheduleResult.add(result.getString(3))
+            scheduleResult.add(result.getString(4))
+            scheduleResult.add(result.getString(5))
+        }
+        return scheduleResult
+    }
+
     fun setVisitInfo(
         id: Int,
         isNew: Boolean,

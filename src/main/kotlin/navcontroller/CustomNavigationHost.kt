@@ -16,7 +16,8 @@ fun customNavigationHost(
     clientInfoState: ClientInfoState,
     servicesState: ServicesState,
     drugsState: DrugsState,
-    vaccineState: VaccineState
+    vaccineState: VaccineState,
+    homeViewModel: HomeViewModel
 ) {
     NavigationHost(navController) {
 
@@ -81,6 +82,12 @@ fun customNavigationHost(
         composable(Screen.VaccineScreen.name) {
             buildVaccine(
                 vaccineState
+            )
+        }
+
+        composable(Screen.AppointmentScreen.name) {
+            buildAppointment(
+                homeViewModel
             )
         }
     }.build()

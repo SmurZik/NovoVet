@@ -22,6 +22,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("mysql:mysql-connector-java:8.0.33")
     implementation ("ca.gosyer:compose-material-dialogs-core:0.9.3")
+    implementation(compose.material3)
     implementation ("ca.gosyer:compose-material-dialogs-datetime:0.9.3")
     implementation("org.apache.pdfbox:pdfbox:3.0.0")
     implementation("com.sun.mail:javax.mail:1.6.2")
