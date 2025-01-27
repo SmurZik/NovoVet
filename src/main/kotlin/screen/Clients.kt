@@ -61,12 +61,13 @@ fun buildClients(
 //    val scope = CoroutineScope(Dispatchers.Default)
     LazyRow(
         modifier = Modifier
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxWidth(1f)
             .height(110.dp)
     ) {
         items(2) {
             Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     if (it == 1) {
                         clientsScreenState.updateIsSearch(!clientsScreenState.getIsSearch())
@@ -123,14 +124,14 @@ fun buildClients(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .width(1100.dp)
+                        .fillMaxWidth()
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
-                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                127,
-                                199,
-                                255
+                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                224,
+                                224,
+                                224
                             )
                         ),
                     horizontalArrangement = Arrangement.Start
@@ -140,7 +141,7 @@ fun buildClients(
                             text = currentNote[it + row * 2],
                             modifier = if (it != 0 || row == 0) Modifier
                                 .padding(13.dp)
-                                .width(if (it == 0) 500.dp else 600.dp)
+                                .width(780.dp)
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
@@ -157,7 +158,7 @@ fun buildClients(
                                     navController.navigate(Screen.ClientInfoScreen.name)
                                 }
                                 .padding(13.dp)
-                                .width(500.dp),
+                                .width(780.dp),
                             textAlign = TextAlign.Center,
                             color = if (row == 0) Color.White else Color.Black,
                             fontSize = if (row == 0) 18.sp else 16.sp
@@ -167,7 +168,7 @@ fun buildClients(
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight(),
-                            color = Color(0, 191, 255)
+                            color = Color.LightGray
                         )
                     }
                 }
@@ -383,7 +384,11 @@ fun newClientAdder(
                             illnessHistoryState.updateCompletedPair(
                                 Pair(
                                     listOf("Услуга"),
-                                    listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")), listOf(listOf("Своё")))
+                                    listOf(
+                                        listOf(listOf("Препараты")),
+                                        listOf(listOf("Количество")),
+                                        listOf(listOf("Своё"))
+                                    )
                                 )
                             )
                             illnessHistoryState.clearMeasures(listOf(""))

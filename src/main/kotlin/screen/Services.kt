@@ -35,12 +35,13 @@ fun buildServices(
 //    val scope = CoroutineScope(Dispatchers.Default)
     LazyRow(
         modifier = Modifier
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxWidth(1f)
             .height(110.dp)
     ) {
         items(1) {
             Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     servicesState.updateAddingNewService(true)
                 },
@@ -74,14 +75,14 @@ fun buildServices(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .width(1350.dp)
+                        .fillMaxWidth()
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
-                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                127,
-                                199,
-                                255
+                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                224,
+                                224,
+                                224
                             )
                         ),
                     horizontalArrangement = Arrangement.Start
@@ -91,7 +92,7 @@ fun buildServices(
                             text = currentNote[it + row * 2],
                             modifier = if (it != 0 || row == 0) Modifier
                                 .padding(13.dp)
-                                .width(if (it == 0) 1000.dp else 300.dp)
+                                .width(if (it == 0) 1000.dp else 560.dp)
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
@@ -111,7 +112,7 @@ fun buildServices(
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight(),
-                            color = Color(0, 191, 255)
+                            color = Color.LightGray
                         )
                     }
                 }
@@ -144,7 +145,10 @@ fun newServiceAdder(
                 )
 
                 Button(
-                    modifier = Modifier.padding(top = 20.dp, start = if (!servicesState.editingService()) 150.dp else 80.dp),
+                    modifier = Modifier.padding(
+                        top = 20.dp,
+                        start = if (!servicesState.editingService()) 150.dp else 80.dp
+                    ),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
                     onClick = {
                         servicesState.updateAddingNewService(false)

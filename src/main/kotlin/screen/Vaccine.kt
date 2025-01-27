@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,12 +36,13 @@ fun buildVaccine(
     val stateHorizontal = rememberScrollState(0)
     LazyRow(
         modifier = Modifier
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxWidth(1f)
             .height(110.dp)
     ) {
         items(1) {
             Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     if (it == 0) {
                         vaccineState.updateIsSearch(!vaccineState.getIsSearch())
@@ -68,7 +70,7 @@ fun buildVaccine(
                 text = if (vaccineState.dateResult() == formattedDate) "Показаны последние 100 вакцинаций"
                 else "Показаны вакцинации за " + formatDate.format(vaccineState.dateResult()),
                 fontSize = 20.sp,
-                modifier = Modifier.padding(top = 40.dp, start = 300.dp)
+                modifier = Modifier.padding(top = 40.dp, start = 500.dp)
             )
         }
         if (vaccineState.dateResult() != formattedDate) {
@@ -96,7 +98,7 @@ fun buildVaccine(
                 Icon(
                     painter = painterResource("/calendar.png"),
                     contentDescription = "calendar",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp).background(Color(0, 191, 255), shape = RoundedCornerShape(8.dp))
                 )
             }
         }
@@ -124,7 +126,8 @@ fun buildVaccine(
             .padding(top = 105.dp)
             .fillMaxSize()
     ) {
-        val tempPair = DataImpl().getVaccineJournal(vaccineState.searchText(), vaccineState.searchBy(), vaccineState.dateResult())
+        val tempPair =
+            DataImpl().getVaccineJournal(vaccineState.searchText(), vaccineState.searchBy(), vaccineState.dateResult())
         val currentNote = tempPair.first
         val visitIds = tempPair.second.second
         val countLines = tempPair.second.first
@@ -133,13 +136,13 @@ fun buildVaccine(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .height(50.dp)
+                        .height(IntrinsicSize.Min)
                         .horizontalScroll(stateHorizontal)
                         .background(
-                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                127,
-                                199,
-                                255
+                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                224,
+                                224,
+                                224
                             )
                         ),
                     horizontalArrangement = Arrangement.Start
@@ -150,7 +153,7 @@ fun buildVaccine(
                             text = temp,
                             modifier = Modifier
                                 .padding(13.dp)
-                                .width(if (it == 1) 400.dp else 300.dp),
+                                .width(if (it == 1 || it == 3) 446.dp else 300.dp),
                             textAlign = TextAlign.Center,
                             color = if (row == 0) Color.White else Color.Black,
                             fontSize = if (row == 0) 18.sp else 16.sp
@@ -160,7 +163,7 @@ fun buildVaccine(
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight(),
-                            color = Color(0, 191, 255)
+                            color = Color.LightGray
                         )
                     }
                 }

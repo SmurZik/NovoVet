@@ -35,12 +35,13 @@ fun buildDrugs(
 //    val scope = CoroutineScope(Dispatchers.Default)
     LazyRow(
         modifier = Modifier
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxWidth(1f)
             .height(110.dp)
     ) {
         items(1) {
             Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     drugsState.updateAddingNewDrug(true)
                 },
@@ -74,14 +75,14 @@ fun buildDrugs(
             items(countLines) { row ->
                 Row(
                     modifier = Modifier
-                        .width(1480.dp)
+                        .fillMaxWidth()
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
-                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                127,
-                                199,
-                                255
+                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                224,
+                                224,
+                                224
                             )
                         ),
                     horizontalArrangement = Arrangement.Start
@@ -91,7 +92,7 @@ fun buildDrugs(
                             text = currentNote[it + row * 3],
                             modifier = if (it != 0 || row == 0) Modifier
                                 .padding(13.dp)
-                                .width(if (it == 0) 800.dp else 300.dp)
+                                .width(if (it == 0) 800.dp else 360.dp)
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
@@ -113,7 +114,7 @@ fun buildDrugs(
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight(),
-                            color = Color(0, 191, 255)
+                            color = Color.LightGray
                         )
                     }
                 }

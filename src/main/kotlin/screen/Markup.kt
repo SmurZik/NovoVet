@@ -176,12 +176,13 @@ fun markup(
 //    val scope = CoroutineScope(Dispatchers.Default)
     LazyRow(
         modifier = Modifier
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxWidth(1f)
             .height(110.dp)
     ) {
         items(2) {
             Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     if (it == 1) {
                         outpatientScreenState.updateIsSearch(!outpatientScreenState.getIsSearch())
@@ -239,7 +240,7 @@ fun markup(
                 Icon(
                     painter = painterResource("/calendar.png"),
                     contentDescription = "calendar",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp).background(Color(0, 191, 255), shape = RoundedCornerShape(8.dp))
                 )
             }
         }
@@ -271,7 +272,11 @@ fun markup(
 
 
         val tempPair =
-            DataImpl().getOutpatientCard(outpatientScreenState.searchText(), outpatientScreenState.searchBy(), outpatientScreenState.dateResult())
+            DataImpl().getOutpatientCard(
+                outpatientScreenState.searchText(),
+                outpatientScreenState.searchBy(),
+                outpatientScreenState.dateResult()
+            )
         val currentNote = tempPair.first.first
         val clientIds = tempPair.first.second
         val countLines = tempPair.second.first
@@ -285,10 +290,10 @@ fun markup(
                         .height(50.dp)
                         .horizontalScroll(stateHorizontal)
                         .background(
-                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                127,
-                                199,
-                                255
+                            color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                224,
+                                224,
+                                224
                             )
                         ),
                     horizontalArrangement = Arrangement.Start
@@ -299,7 +304,7 @@ fun markup(
                             text = temp,
                             modifier = if (it != 1 && it != 2 || row == 0) Modifier
                                 .padding(13.dp)
-                                .width(if (it == 1) 400.dp else 300.dp)
+                                .width(if (it == 1 || it == 2) 446.dp else 300.dp)
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
@@ -343,7 +348,7 @@ fun markup(
                                     }
                                 }
                                 .padding(13.dp)
-                                .width(if (it == 1) 400.dp else 300.dp),
+                                .width(if (it == 1 || it == 2) 446.dp else 300.dp),
                             textAlign = TextAlign.Center,
                             color = if (row == 0) Color.White else Color.Black,
                             fontSize = if (row == 0) 18.sp else 16.sp
@@ -353,7 +358,7 @@ fun markup(
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight(),
-                            color = Color(0, 191, 255)
+                            color = Color.LightGray
                         )
                     }
                 }

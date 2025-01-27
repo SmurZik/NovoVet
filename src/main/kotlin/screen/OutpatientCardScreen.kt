@@ -488,7 +488,7 @@ fun buildVisitNote(
     Box(
         modifier = Modifier
             .padding(start = 380.dp)
-            .background(color = Color.Cyan)
+            .background(color = Color.LightGray)
             .fillMaxSize()
     ) {
         var expanded2 by remember { mutableStateOf(false) }
@@ -597,7 +597,7 @@ fun buildVisitNote(
             Button(
                 modifier = Modifier
                     .padding(top = 16.dp, start = 128.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0, 191, 255)),
                 enabled = illnessHistoryState.getIsPattern() && enablePrevious,
                 onClick = {
                     val currentDate = illnessHistoryState.date()
@@ -683,7 +683,7 @@ fun buildVisitNote(
 
             Button(
                 modifier = Modifier.padding(top = 16.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0, 191, 255)),
                 enabled = illnessHistoryState.getIsPattern() && enableNext,
                 onClick = {
                     val currentDate = illnessHistoryState.date()
@@ -941,7 +941,7 @@ fun buildExamination(
                     onClick = {
                         illnessHistoryState.updateNext(!illnessHistoryState.next())
                     },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0, 191, 255)),
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     if (illnessHistoryState.next()) {
@@ -965,7 +965,7 @@ fun buildExamination(
                         illnessHistoryState.updateIsPattern(true)
                         illnessHistoryState.updateIsNewVisitInfo(false)
                     },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Cyan),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0, 191, 255)),
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     Icon(
@@ -1616,7 +1616,7 @@ fun buildBiggerNote(
     Box(
         modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 8.dp)
             .fillMaxWidth()
-            .background(color = Color.Cyan, shape = RoundedCornerShape(8.dp))
+            .background(color = Color(224, 224, 224), shape = RoundedCornerShape(8.dp))
             .height(if (!isCompleted) 100.dp else 500.dp)
     ) {
         Text(
@@ -2344,7 +2344,7 @@ fun buildOneNote(
             top = if (!illnessHistoryState.next()) 8.dp else 50.dp,
             bottom = 8.dp
         ).fillMaxWidth()
-            .background(color = Color.Cyan, shape = RoundedCornerShape(8.dp))
+            .background(color = Color(224, 224, 224), shape = RoundedCornerShape(8.dp))
     ) {
         Text(
             label,

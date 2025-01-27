@@ -152,12 +152,13 @@ fun buildClientInfo(
         Column {
             LazyRow(
                 modifier = Modifier
-                    .background(color = Color.Cyan)
+                    .background(color = Color.LightGray)
                     .fillMaxWidth(1f)
                     .height(110.dp)
             ) {
                 items(1) {
                     Button(
+                        colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                         onClick = {
                             clientInfoState.updateAddingNewPet(true)
                             clientInfoState.updateNickname("")
@@ -167,7 +168,7 @@ fun buildClientInfo(
                             clientInfoState.updateAge("")
                         },
                         modifier = Modifier
-                            .padding(top = 30.dp, end = 8.dp)
+                            .padding(top = 30.dp, end = 8.dp, start = 8.dp)
                     ) {
                         val icon = if (it == 0) Icons.Filled.Add else Icons.Filled.Search
                         Icon(
@@ -185,14 +186,14 @@ fun buildClientInfo(
                 items(clientInfoState.countLines()) { row ->
                     Row(
                         modifier = Modifier
-                            .width(1108.dp)
+                            .fillMaxWidth()
                             .height(50.dp)
                             .horizontalScroll(stateHorizontal)
                             .background(
-                                color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.Cyan else Color(
-                                    127,
-                                    199,
-                                    255
+                                color = if (row == 0) Color.Blue else if (row % 2 == 0) Color.White else Color(
+                                    224,
+                                    224,
+                                    224
                                 )
                             ),
                         horizontalArrangement = Arrangement.Start
@@ -202,7 +203,7 @@ fun buildClientInfo(
                                 text = clientInfoState.addInfo()[it + row * 4],
                                 modifier = if (it != 0 || row == 0) Modifier
                                     .padding(13.dp)
-                                    .width(250.dp)
+                                    .width(275.dp)
                                 else Modifier
                                     .clickable {
                                         CoroutineScope(Dispatchers.Default).launch {
@@ -225,7 +226,7 @@ fun buildClientInfo(
                                     }
                                     .fillMaxHeight()
                                     .padding(13.dp)
-                                    .width(250.dp),
+                                    .width(275.dp),
                                 textAlign = TextAlign.Center,
                                 color = if (row == 0) Color.White else Color.Black,
                                 fontSize = if (row == 0) 18.sp else 16.sp
@@ -235,7 +236,7 @@ fun buildClientInfo(
                                 modifier = Modifier
                                     .width(1.dp)
                                     .fillMaxHeight(),
-                                color = Color(0, 191, 255)
+                                color = Color.LightGray
                             )
                         }
                     }
@@ -414,7 +415,11 @@ fun newPetAdder(
                         illnessHistoryState.updateCompletedPair(
                             Pair(
                                 listOf("Услуга"),
-                                listOf(listOf(listOf("Препараты")), listOf(listOf("Количество")), listOf(listOf("Своё")))
+                                listOf(
+                                    listOf(listOf("Препараты")),
+                                    listOf(listOf("Количество")),
+                                    listOf(listOf("Своё"))
+                                )
                             )
                         )
                         illnessHistoryState.clearOwnerDrugs(listOf("false"))
