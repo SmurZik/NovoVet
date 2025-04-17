@@ -2,7 +2,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm") version "1.9.24"
     id("org.jetbrains.compose") version "1.4.1"
 }
 
@@ -47,8 +47,8 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             includeAllModules = true
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "NovoVet"
             packageVersion = "0.0.1"
             windows {
@@ -61,5 +61,5 @@ compose.desktop {
 }
 
 compose {
-    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.5.5")
+    kotlinCompilerPlugin.set("androidx.compose.compiler:compiler:1.5.14")
 }

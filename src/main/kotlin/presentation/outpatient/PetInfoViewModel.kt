@@ -1,0 +1,66 @@
+package presentation.outpatient
+
+import androidx.compose.runtime.*
+import data.utils.Constant
+
+@Stable
+class PetInfoViewModel {
+
+    private var nickname by mutableStateOf(Constant.EMPTY)
+    private var kind by mutableStateOf(Constant.EMPTY)
+    private var breed by mutableStateOf(Constant.EMPTY)
+    private var male by mutableStateOf(Constant.EMPTY)
+    private var age by mutableStateOf(Constant.EMPTY)
+    private var save by mutableStateOf(false)
+
+    private var vac by mutableStateOf(Constant.EMPTY)
+    private var vacDate by mutableStateOf(Constant.EMPTY)
+
+    fun updateVacDate(value: String) {
+        vacDate = value
+    }
+
+    fun vacDate(): String = vacDate
+
+    fun updateVac(value: String) {
+        vac = value
+    }
+
+    fun vac(): String = vac
+
+    fun updateNickname(value: String) {
+        nickname = value
+    }
+
+    fun nickname(): String = nickname
+
+    fun updateKind(value: String) {
+        kind = value
+    }
+
+    fun kind(): String = kind
+
+    fun updateBreed(value: String) {
+        breed = value
+    }
+
+    fun breed(): String = breed
+
+    fun updateMale(value: String) {
+        male = value
+    }
+
+    fun male(): String = male
+
+    fun updateAge(value: String) {
+        age = value
+    }
+
+    fun age(): String = age
+
+    fun updateSave(value: Boolean) {
+        save = value
+    }
+
+    fun save(): Boolean = save
+}

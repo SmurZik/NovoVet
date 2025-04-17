@@ -13,14 +13,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
-import data.CorrectDate
-import data.DataImpl
-import data.Schedule
-import jdk.javadoc.doclet.Reporter
-import navcontroller.*
-import state.HomeViewModel
-import state.State
-import state.StateWrapper
+import data.utils.CorrectDate
+import data.Repository
+import data.utils.Schedule
+import presentation.main.navcontroller.*
+import presentation.appointment.AppointmentViewModel
+import presentation.main.StateWrapper
 import java.util.*
 
 @Composable
@@ -56,7 +54,7 @@ fun app() {
     val serviceState = StateWrapper().initialServiceState()
     val drugState = StateWrapper().initialDrugState()
     val vaccineState = StateWrapper().initialVaccineState()
-    val homeViewModel = HomeViewModel(CorrectDate.Base(), Calendar.getInstance(), Schedule.Base(), DataImpl())
+    val appointmentViewModel = AppointmentViewModel(CorrectDate.Base(), Calendar.getInstance(), Schedule.Base(), Repository())
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)
@@ -228,16 +226,16 @@ fun app() {
         customNavigationHost(
             navController = navController,
             shareDataState = shareDataState,
-            tabState = tabState,
-            outpatientScreenState = outpatientScreenState,
-            petInfoState = petInfoState,
-            illnessHistoryState = illnessHistoryState,
-            clientsScreenState = clientsScreenState,
-            clientInfoState = clientInfoState,
-            servicesState = serviceState,
-            drugsState = drugState,
+            tabViewModel = tabState,
+            outpatientViewModel = outpatientScreenState,
+            petInfoViewModel = petInfoState,
+            illnessHistoryViewModel = illnessHistoryState,
+            clientsViewModel = clientsScreenState,
+            clientInfoViewModel = clientInfoState,
+            servicesViewModel = serviceState,
+            drugsViewModel = drugState,
             vaccineState = vaccineState,
-            homeViewModel = homeViewModel
+            appointmentViewModel = appointmentViewModel
         )
     }
 }
