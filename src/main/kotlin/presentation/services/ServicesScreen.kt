@@ -12,6 +12,8 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import data.Repository
+import presentation.components.search
 
 @Composable
 fun buildServices(
@@ -42,6 +45,8 @@ fun buildServices(
                 colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     servicesViewModel.updateAddingNewService(true)
+                    servicesViewModel.updatePrice("")
+                    servicesViewModel.updateName("")
                 },
                 modifier = Modifier
                     .padding(top = 30.dp, end = 8.dp)
@@ -54,9 +59,31 @@ fun buildServices(
                 Text(textButton[it], modifier = Modifier.padding(8.dp))
             }
         }
+        
+        item {
+            Button(
+                colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
+                onClick = {
+                    servicesViewModel.updateIsSearch(!servicesViewModel.getIsSearch())
+                },
+                modifier = Modifier
+                    .padding(top = 30.dp, end = 8.dp)
+            ) {
+                val icon = Icons.Filled.Search
+                Icon(
+                    icon,
+                    contentDescription = ""
+                )
+                Text("Найти", modifier = Modifier.padding(8.dp))
+            }
+        }
     }
 
-    val info = Repository().getServices()
+    if (servicesViewModel.getIsSearch()) {
+        search(servicesViewModel, false, onExpandedChange = {  })
+    }
+
+    val info = Repository.getServices(servicesViewModel.searchText())
     val currentNote = info.first
     val countLines = info.second.first
     val serviceIds = info.second.second
@@ -221,9 +248,9 @@ fun newServiceAdder(
                 Button(
                     onClick = {
                         if (!servicesViewModel.editingService()) {
-                            Repository().addService(servicesViewModel.name(), servicesViewModel.price())
+                            Repository.addService(servicesViewModel.name(), servicesViewModel.price())
                         } else {
-                            Repository().editService(servicesViewModel.name(), servicesViewModel.price(), servicesViewModel.id())
+                            Repository.editService(servicesViewModel.name(), servicesViewModel.price(), servicesViewModel.id())
                         }
                         servicesViewModel.updateAddingNewService(false)
                         servicesViewModel.updateEditingService(false)
@@ -236,6 +263,20 @@ fun newServiceAdder(
                     Text(if (!servicesViewModel.editingService()) "Добавить" else "Применить")
                 }
             }
+
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = Color.Red,
+                modifier = Modifier
+                    .clickable {
+                        Repository.deleteService(servicesViewModel.id())
+                        servicesViewModel.updateEditingService(false)
+                        servicesViewModel.updateAddingNewService(false)
+                    }
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+            )
         }
     }
 }

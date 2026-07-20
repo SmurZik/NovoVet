@@ -104,7 +104,7 @@ fun buildClients(
         }
     }
 
-    val info = Repository().getClientsInfo(clientsViewModel.searchText(), clientsViewModel.searchBy())
+    val info = Repository.getClientsInfo(clientsViewModel.searchText(), clientsViewModel.searchBy())
     val currentNote = info.first.second
     val clientIds = info.first.first
     val countLines = info.second
@@ -147,7 +147,7 @@ fun buildClients(
                             else Modifier
                                 .fillMaxHeight()
                                 .clickable {
-                                    val clientInfo = Repository().getClientInfo(clientIds[row - 1])
+                                    val clientInfo = Repository.getClientInfo(clientIds[row - 1])
                                     StateWrapper().fillClientInfoState(
                                         clientInfoViewModel,
                                         clientInfo.first
@@ -327,7 +327,7 @@ fun newClientAdder(
                 Button(
                     onClick = {
                         if (!clientsViewModel.addingNewPet()) {
-                            val clientId = Repository().addClientInfo(
+                            val clientId = Repository.addClientInfo(
                                 clientsViewModel.secondName(),
                                 clientsViewModel.firstName(),
                                 clientsViewModel.lastName(),
@@ -351,7 +351,7 @@ fun newClientAdder(
                             clientsViewModel.updatePhoneNumber("")
                             clientsViewModel.updateEmail("")
                         } else {
-                            Repository().addPetInfo(
+                            Repository.addPetInfo(
                                 clientsViewModel.nickname(),
                                 clientsViewModel.kind(),
                                 clientsViewModel.breed(),
@@ -361,7 +361,7 @@ fun newClientAdder(
                             )
                             clientsViewModel.updateAddingNewPet(false)
                             clientsViewModel.updateAddingNewClient(false)
-                            val petId = Repository().getPetId(
+                            val petId = Repository.getPetId(
                                 clientsViewModel.nickname(),
                                 clientsViewModel.kind(),
                                 clientsViewModel.breed(),

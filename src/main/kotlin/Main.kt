@@ -54,7 +54,7 @@ fun app() {
     val serviceState = StateWrapper().initialServiceState()
     val drugState = StateWrapper().initialDrugState()
     val vaccineState = StateWrapper().initialVaccineState()
-    val appointmentViewModel = AppointmentViewModel(CorrectDate.Base(), Calendar.getInstance(), Schedule.Base(), Repository())
+    val appointmentViewModel = AppointmentViewModel(CorrectDate.Base(), Calendar.getInstance(), Schedule.Base(), Repository)
 
     Box(
         modifier = Modifier.fillMaxHeight().width(320.dp).background(color = Color.LightGray)

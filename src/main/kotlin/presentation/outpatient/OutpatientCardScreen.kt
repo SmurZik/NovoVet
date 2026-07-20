@@ -70,7 +70,7 @@ fun buildOutpatientCard(
 //    StateWrapper().fillIllnessHistoryState(illnessHistoryState, illnessHistoryState.visit())
     val id = illnessHistoryViewModel.id()
     val note = illnessHistoryViewModel.note()
-    val dates = Repository().getVisitDates(id)
+    val dates = Repository.getVisitDates(id)
     if (note.isNotEmpty()) {
 //        onSaveChange(true)
         //secondName = note[0]
@@ -201,7 +201,7 @@ fun buildOutpatientCard(
             Button(
                 onClick = {
                     if (petInfoViewModel.save()) {
-                        Repository().setPetInfo(
+                        Repository.setPetInfo(
                             petInfoViewModel.nickname(),
                             petInfoViewModel.breed(),
                             petInfoViewModel.kind(),
@@ -313,7 +313,7 @@ fun manualVaccineAdder(
                                     illnessHistoryViewModel.updateSearchingService(true)
                                     if (it != "" && !it.contains('(') && !it.contains(')')) {
                                         illnessHistoryViewModel.updateServicesList(
-                                            Repository().getServiceByFirstLetter(
+                                            Repository.getServiceByFirstLetter(
                                                 it,
                                                 true
                                             )
@@ -397,7 +397,7 @@ fun manualVaccineAdder(
                         ) {
                             val client =
                                 clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                            Repository().setVacInfo(
+                            Repository.setVacInfo(
                                 info = outpatientViewModel.vaccine(),
                                 date = outpatientViewModel.vaccineDate() + " 00:00:00",
                                 petId = illnessHistoryViewModel.id(),
@@ -460,19 +460,19 @@ fun buildVisitNote(
     var visitDate =
         ""
     if (illnessHistoryViewModel.visit().size > 1 && illnessHistoryViewModel.getIsPattern()) {
-        visitDate = Repository().readableDateFormat(visit[14] + " " + visit[15])
+        visitDate = Repository.readableDateFormat(visit[14] + " " + visit[15])
         illnessHistoryViewModel.updateDate(visitDate)
     }
     if (!illnessHistoryViewModel.getIsNewVisitInfo()) {
-        val info = Repository().getCompleted(illnessHistoryViewModel.visitId())
+        val info = Repository.getCompleted(illnessHistoryViewModel.visitId())
         val countLines = info.second.first
         val completedIds = info.second.second
         val tempCompleted = info.first
-        illnessHistoryViewModel.updateCompletedPair(Repository().parseCompleted(tempCompleted, countLines))
+        illnessHistoryViewModel.updateCompletedPair(Repository.parseCompleted(tempCompleted, countLines))
         illnessHistoryViewModel.updateCountLines(countLines)
         illnessHistoryViewModel.updateCompletedIds(completedIds)
 
-        val price = Repository().getPrice(
+        val price = Repository.getPrice(
             illnessHistoryViewModel.completedPair().first,
             illnessHistoryViewModel.completedPair().second[0],
             illnessHistoryViewModel.completedPair().second[1],
@@ -541,7 +541,7 @@ fun buildVisitNote(
             if (!illnessHistoryViewModel.getIsPattern()) {
                 IconButton(
                     onClick = {
-                        Repository().setVisitInfo(
+                        Repository.setVisitInfo(
                             id = illnessHistoryViewModel.visitId(),
                             isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                             petId = illnessHistoryViewModel.id(),
@@ -560,7 +560,7 @@ fun buildVisitNote(
                             if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
                                 val client =
                                     clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                                Repository().setVacInfo(
+                                Repository.setVacInfo(
                                     it,
                                     illnessHistoryViewModel.id(),
                                     illnessHistoryViewModel.date(),
@@ -573,7 +573,7 @@ fun buildVisitNote(
                         CoroutineScope(Dispatchers.Default).launch {
                             illnessHistoryViewModel.updateLoading(true)
                             val info = withContext(Dispatchers.IO) {
-                                Repository().getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
+                                Repository.getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
                             }
                             StateWrapper().fillIllnessHistoryState(illnessHistoryViewModel, info.first.second)
                             illnessHistoryViewModel.updateIsPattern(true)
@@ -608,7 +608,7 @@ fun buildVisitNote(
                         CoroutineScope(Dispatchers.Default).launch {
                             illnessHistoryViewModel.updateLoading(true)
                             val newVisitInfo = withContext(Dispatchers.IO) {
-                                Repository().getInfoByPetId(illnessHistoryViewModel.id() to newDate.first + " " + newDate.second)
+                                Repository.getInfoByPetId(illnessHistoryViewModel.id() to newDate.first + " " + newDate.second)
                             }
                             illnessHistoryViewModel.updateVisit(newVisitInfo.first.second)
                             illnessHistoryViewModel.updateVisitId(newVisitInfo.second.second)
@@ -663,7 +663,7 @@ fun buildVisitNote(
                                 illnessHistoryViewModel.updateLoading(true)
                                 scope.launch {
                                     val newVisitInfo =
-                                        Repository().getInfoByPetId(illnessHistoryViewModel.id() to tempDate.first + " " + tempDate.second)
+                                        Repository.getInfoByPetId(illnessHistoryViewModel.id() to tempDate.first + " " + tempDate.second)
                                     illnessHistoryViewModel.updateVisit(newVisitInfo.first.second)
                                     illnessHistoryViewModel.updateVisitId(newVisitInfo.second.second)
                                     expanded2 = false
@@ -673,7 +673,7 @@ fun buildVisitNote(
                                 }
                             }
                         ) {
-                            Text(Repository().readableDateFormat(tempDate.first + " " + tempDate.second))
+                            Text(Repository.readableDateFormat(tempDate.first + " " + tempDate.second))
                         }
                     }
                 }
@@ -694,7 +694,7 @@ fun buildVisitNote(
                         CoroutineScope(Dispatchers.Default).launch {
                             illnessHistoryViewModel.updateLoading(true)
                             val newVisitInfo = withContext(Dispatchers.IO) {
-                                Repository().getInfoByPetId(illnessHistoryViewModel.id() to newDate.first + " " + newDate.second)
+                                Repository.getInfoByPetId(illnessHistoryViewModel.id() to newDate.first + " " + newDate.second)
                             }
                             illnessHistoryViewModel.updateVisit(newVisitInfo.first.second)
                             illnessHistoryViewModel.updateVisitId(newVisitInfo.second.second)
@@ -836,7 +836,7 @@ fun buildExamination(
                                 illnessHistoryViewModel.completedPair().second[0].forEachIndexed { index, drugs ->
                                     tempMeasures.add(mutableListOf())
                                     drugs.forEach { drug ->
-                                        tempMeasures[index].add(Repository().getMeasure(drug))
+                                        tempMeasures[index].add(Repository.getMeasure(drug))
                                     }
                                 }
                                 illnessHistoryViewModel.fillMeasureComplex(tempMeasures)
@@ -1035,7 +1035,7 @@ fun buildExamination(
                             modifier = Modifier.fillMaxWidth().padding(8.dp),
                             colors = ButtonDefaults.buttonColors(backgroundColor = Color(250, 240, 230)),
                             onClick = {
-                                Repository().setVisitInfo(
+                                Repository.setVisitInfo(
                                     id = illnessHistoryViewModel.visitId(),
                                     isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                                     petId = illnessHistoryViewModel.id(),
@@ -1054,7 +1054,7 @@ fun buildExamination(
                                     if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
                                         val client =
                                             clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                                        Repository().setVacInfo(
+                                        Repository.setVacInfo(
                                             it,
                                             illnessHistoryViewModel.id(),
                                             illnessHistoryViewModel.date(),
@@ -1099,7 +1099,7 @@ fun buildExamination(
                         modifier = Modifier.fillMaxWidth().padding(8.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(250, 240, 230)),
                         onClick = {
-                            Repository().setVisitInfo(
+                            Repository.setVisitInfo(
                                 id = illnessHistoryViewModel.visitId(),
                                 isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                                 petId = illnessHistoryViewModel.id(),
@@ -1118,7 +1118,7 @@ fun buildExamination(
                                 if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
                                     val client =
                                         clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                                    Repository().setVacInfo(
+                                    Repository.setVacInfo(
                                         it,
                                         illnessHistoryViewModel.id(),
                                         illnessHistoryViewModel.date(),
@@ -1165,7 +1165,7 @@ fun priceDialog(
                         illnessHistoryViewModel.updateIsPattern(true)
                         illnessHistoryViewModel.updateIsNewVisitInfo(false)
                         CoroutineScope(Dispatchers.Default).launch {
-                            Repository().setVisitInfo(
+                            Repository.setVisitInfo(
                                 id = illnessHistoryViewModel.visitId(),
                                 isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                                 petId = illnessHistoryViewModel.id(),
@@ -1181,13 +1181,13 @@ fun priceDialog(
                                 complete = "true"
                             )
                             val info =
-                                Repository().getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
+                                Repository.getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
                             illnessHistoryViewModel.updateVisit(info.first.second)
                             illnessHistoryViewModel.completedPair().first.forEach {
                                 if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
                                     val client =
                                         clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                                    Repository().setVacInfo(
+                                    Repository.setVacInfo(
                                         it,
                                         illnessHistoryViewModel.id(),
                                         illnessHistoryViewModel.date(),
@@ -1303,7 +1303,7 @@ fun priceDialog(
                                         val serviceCell = PdfPCell(Phrase(newText, font))
                                         serviceCell.border = Rectangle.NO_BORDER
                                         table.addCell(serviceCell)
-                                        val measure = Repository().getMeasure(s)
+                                        val measure = Repository.getMeasure(s)
                                         val drugCell = PdfPCell(Phrase(s, font))
                                         drugCell.border = Rectangle.NO_BORDER
                                         table.addCell(drugCell)
@@ -1345,7 +1345,7 @@ fun priceDialog(
                             illnessHistoryViewModel.completedPair().first.forEach {
                                 if (it != "Услуга" && it != "") {
                                     val price =
-                                        Repository().getRealServicePrice(it, illnessHistoryViewModel.visitId())
+                                        Repository.getRealServicePrice(it, illnessHistoryViewModel.visitId())
                                     sum += price.toInt()
                                     text1 += "$it - $price\n"
                                 }
@@ -1386,7 +1386,7 @@ fun priceDialog(
                         illnessHistoryViewModel.updateIsPattern(true)
                         illnessHistoryViewModel.updateIsNewVisitInfo(false)
                         CoroutineScope(Dispatchers.Default).launch {
-                            Repository().setVisitInfo(
+                            Repository.setVisitInfo(
                                 id = illnessHistoryViewModel.visitId(),
                                 isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                                 petId = illnessHistoryViewModel.id(),
@@ -1402,13 +1402,13 @@ fun priceDialog(
                                 complete = "true"
                             )
                             val info =
-                                Repository().getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
+                                Repository.getInfoByPetId(illnessHistoryViewModel.id() to "${illnessHistoryViewModel.date()}:00")
                             illnessHistoryViewModel.updateVisit(info.first.second)
                             illnessHistoryViewModel.completedPair().first.forEach {
                                 if (it.lowercase(Locale.getDefault()).contains("вакцинация")) {
                                     val client =
                                         clientInfoViewModel.secondName() + " " + clientInfoViewModel.firstName() + " " + clientInfoViewModel.lastName()
-                                    Repository().setVacInfo(
+                                    Repository.setVacInfo(
                                         it,
                                         illnessHistoryViewModel.id(),
                                         illnessHistoryViewModel.date(),
@@ -1526,7 +1526,7 @@ fun priceDialog(
                                         val serviceCell = PdfPCell(Phrase(newText, font))
                                         serviceCell.border = Rectangle.NO_BORDER
                                         table.addCell(serviceCell)
-                                        val measure = Repository().getMeasure(s)
+                                        val measure = Repository.getMeasure(s)
                                         val drugCell = PdfPCell(Phrase(s, font))
                                         drugCell.border = Rectangle.NO_BORDER
                                         table.addCell(drugCell)
@@ -1563,7 +1563,7 @@ fun priceDialog(
                             illnessHistoryViewModel.completedPair().first.forEach {
                                 if (it != "Услуга" && it != "") {
                                     val price =
-                                        Repository().getRealServicePrice(it, illnessHistoryViewModel.visitId())
+                                        Repository.getRealServicePrice(it, illnessHistoryViewModel.visitId())
                                     sum += price.toInt()
                                     text1 += "$it - $price\n"
                                 }
@@ -1633,18 +1633,18 @@ fun buildBiggerNote(
             )
         } else {
             if (!illnessHistoryViewModel.getIsNewVisitInfo()) {
-                val info = Repository().getCompleted(illnessHistoryViewModel.visitId())
+                val info = Repository.getCompleted(illnessHistoryViewModel.visitId())
                 val countLines = info.second.first
                 val completedIds = info.second.second
                 val tempCompleted = info.first
-                illnessHistoryViewModel.updateCompletedPair(Repository().parseCompleted(tempCompleted, countLines))
+                illnessHistoryViewModel.updateCompletedPair(Repository.parseCompleted(tempCompleted, countLines))
                 illnessHistoryViewModel.updateCountLines(countLines)
                 illnessHistoryViewModel.updateCompletedIds(completedIds)
                 val tempMeasures = mutableListOf<MutableList<String>>()
                 illnessHistoryViewModel.completedPair().second[0].forEachIndexed { index, it ->
                     tempMeasures.add(mutableListOf())
                     it.forEach {
-                        tempMeasures[index].add(Repository().getMeasure(it))
+                        tempMeasures[index].add(Repository.getMeasure(it))
                     }
                 }
                 illnessHistoryViewModel.fillMeasureComplex(tempMeasures)
@@ -1663,16 +1663,16 @@ fun buildBiggerNote(
                                 illnessHistoryViewModel.clearOwnerDrugs(illnessHistoryViewModel.completedPair().second[2][row])
                                 illnessHistoryViewModel.updateDrugCount(illnessHistoryViewModel.drugs().size)
                                 illnessHistoryViewModel.updateCompletedId(illnessHistoryViewModel.completedIds()[row - 1])
-                                illnessHistoryViewModel.updatePriceTemplate(Repository().getServicePrice(illnessHistoryViewModel.service()))
+                                illnessHistoryViewModel.updatePriceTemplate(Repository.getServicePrice(illnessHistoryViewModel.service()))
                                 illnessHistoryViewModel.updateServicePrice(
-                                    Repository().getRealServicePrice(
+                                    Repository.getRealServicePrice(
                                         illnessHistoryViewModel.service(),
                                         illnessHistoryViewModel.visitId()
                                     )
                                 )
                                 val tempMeasures = mutableListOf<String>()
                                 illnessHistoryViewModel.drugs().forEach { s ->
-                                    tempMeasures.add(Repository().getMeasure(s))
+                                    tempMeasures.add(Repository.getMeasure(s))
                                 }
                                 illnessHistoryViewModel.clearMeasures(tempMeasures)
                                 // байтрил - 10, амокс - 20, серения - 350
@@ -1738,7 +1738,7 @@ fun buildBiggerNote(
                                         mutableListOf("")
                                     )
                                 )
-                                Repository().setVisitInfo(
+                                Repository.setVisitInfo(
                                     id = illnessHistoryViewModel.visitId(),
                                     isNew = illnessHistoryViewModel.getIsNewVisitInfo(),
                                     petId = illnessHistoryViewModel.id(),
@@ -1754,7 +1754,7 @@ fun buildBiggerNote(
                                     complete = "false"
                                 )
                                 illnessHistoryViewModel.updateIsNewVisitInfo(false)
-                                val price = Repository().getPrice(
+                                val price = Repository.getPrice(
                                     illnessHistoryViewModel.completedPair().first,
                                     illnessHistoryViewModel.completedPair().second[0],
                                     illnessHistoryViewModel.completedPair().second[1],
@@ -1764,7 +1764,7 @@ fun buildBiggerNote(
                                     illnessHistoryViewModel.completedPair().second[2]
                                 )
                                 illnessHistoryViewModel.updatePrice(price)
-                                Repository().updatePrice(price, illnessHistoryViewModel.visitId())
+                                Repository.updatePrice(price, illnessHistoryViewModel.visitId())
                             }
                         ) {
                             Icon(
@@ -2047,7 +2047,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                                     illnessHistoryViewModel.updateSearchingService(true)
                                     if (it != "" && !it.contains('(') && !it.contains(')')) {
                                         illnessHistoryViewModel.updateServicesList(
-                                            Repository().getServiceByFirstLetter(
+                                            Repository.getServiceByFirstLetter(
                                                 it,
                                                 false
                                             )
@@ -2081,7 +2081,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                                             .clickable {
                                                 illnessHistoryViewModel.updateService(it)
                                                 illnessHistoryViewModel.updateSearchingService(false)
-                                                illnessHistoryViewModel.updatePriceTemplate(Repository().getServicePrice(it))
+                                                illnessHistoryViewModel.updatePriceTemplate(Repository.getServicePrice(it))
                                                 illnessHistoryViewModel.updateServicePrice("")
                                             }
                                     )
@@ -2153,7 +2153,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                                             illnessHistoryViewModel.updateSearchingDrug(true)
                                             illnessHistoryViewModel.updateCurrentIndex(count)
                                             if (it != "" && !it.contains('(') && !it.contains(')')) {
-                                                illnessHistoryViewModel.updateDrugsList(Repository().getDrugByFirstLetter(it))
+                                                illnessHistoryViewModel.updateDrugsList(Repository.getDrugByFirstLetter(it))
                                             } else {
                                                 illnessHistoryViewModel.updateSearchingDrug(false)
                                             }
@@ -2185,7 +2185,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                                                         )
                                                         illnessHistoryViewModel.updateSearchingDrug(false)
                                                         illnessHistoryViewModel.updateSelectedMeasure(
-                                                            Repository().getMeasure(
+                                                            Repository.getMeasure(
                                                                 it
                                                             ), illnessHistoryViewModel.currentIndex()
                                                         )
@@ -2270,7 +2270,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(250, 240, 230)),
                 onClick = {
                     if (!illnessHistoryViewModel.editingService()) {
-                        Repository().addCompleted(
+                        Repository.addCompleted(
                             service = illnessHistoryViewModel.service(),
                             drugs = illnessHistoryViewModel.drugs(),
                             amounts = illnessHistoryViewModel.amounts(),
@@ -2279,7 +2279,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                             ownerDrug = illnessHistoryViewModel.ownerDrugs()
                         )
                     } else {
-                        Repository().editCompleted(
+                        Repository.editCompleted(
                             service = illnessHistoryViewModel.service(),
                             drugs = illnessHistoryViewModel.drugs(),
                             amounts = illnessHistoryViewModel.amounts(),
@@ -2288,14 +2288,14 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                             ownerDrug = illnessHistoryViewModel.ownerDrugs()
                         )
                     }
-                    val info = Repository().getCompleted(illnessHistoryViewModel.visitId())
+                    val info = Repository.getCompleted(illnessHistoryViewModel.visitId())
                     val countLines = info.second.first
                     val completedIds = info.second.second
                     val tempCompleted = info.first
                     illnessHistoryViewModel.updateCountLines(countLines)
                     illnessHistoryViewModel.updateCompletedIds(completedIds)
-                    illnessHistoryViewModel.updateCompletedPair(Repository().parseCompleted(tempCompleted, countLines))
-                    val price = Repository().getPrice(
+                    illnessHistoryViewModel.updateCompletedPair(Repository.parseCompleted(tempCompleted, countLines))
+                    val price = Repository.getPrice(
                         illnessHistoryViewModel.completedPair().first,
                         illnessHistoryViewModel.completedPair().second[0],
                         illnessHistoryViewModel.completedPair().second[1],
@@ -2305,7 +2305,7 @@ fun newServiceAdder(illnessHistoryViewModel: IllnessHistoryViewModel) {
                         illnessHistoryViewModel.completedPair().second[2]
                     )
                     illnessHistoryViewModel.updatePrice(price)
-                    Repository().updatePrice(price, illnessHistoryViewModel.visitId())
+                    Repository.updatePrice(price, illnessHistoryViewModel.visitId())
                     illnessHistoryViewModel.updateEditingService(false)
                     illnessHistoryViewModel.updateAddingNewService(false)
                     illnessHistoryViewModel.updateService("")

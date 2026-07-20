@@ -6,7 +6,7 @@ import java.sql.DriverManager
 import java.text.SimpleDateFormat
 import kotlin.math.ceil
 
-class Repository {
+object Repository {
     private val connection: Connection =
         DriverManager.getConnection("jdbc:mysql://localhost/novo_vet", "root", "camur2403")
 
@@ -483,12 +483,13 @@ class Repository {
         return clientId
     }
 
-    fun getServices(): Pair<List<String>, Pair<Int, List<Int>>> {
+    fun getServices(name: String): Pair<List<String>, Pair<Int, List<Int>>> {
         val currentNote = mutableListOf("Название услуги", "Стоимость")
         val serviceIds = mutableListOf<Int>()
         var countLines = 1
-        val getServices =
+        val getServices = if (name.isBlank())
             "SELECT name, price, id from services order by name ASC;"
+        else "SELECT name, price, id from services WHERE name REGEXP '$name' order by name ASC;"
         val query = connection.prepareStatement(getServices)
         val result = query.executeQuery()
         while (result.next()) {
@@ -525,11 +526,23 @@ class Repository {
         setNewServiceQuery.execute()
     }
 
+    fun deleteService(id: Int) {
+        val deleteService = "DELETE FROM services WHERE id = $id;"
+        val deleteServiceQuery = connection.prepareStatement(deleteService)
+        deleteServiceQuery.execute()
+    }
+
     fun addDrug(name: String, price: String, measure: String) {
         val setNewDrug =
             "insert into drugs (name, price, measure) values ('$name', '$price', '$measure');"
         val setNewDrugQuery = connection.prepareStatement(setNewDrug)
         setNewDrugQuery.execute()
+    }
+
+    fun deleteDrug(id: Int) {
+        val deleteDrug = "DELETE FROM drugs WHERE id = $id;"
+        val deleteDrugQuery = connection.prepareStatement(deleteDrug)
+        deleteDrugQuery.execute()
     }
 
     fun editService(name: String, price: String, id: Int) {

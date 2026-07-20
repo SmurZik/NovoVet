@@ -12,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,9 @@ fun buildDrugs(
                 colors = ButtonDefaults.buttonColors(Color(0, 191, 255)),
                 onClick = {
                     drugsViewModel.updateAddingNewDrug(true)
+                    drugsViewModel.updatePrice("")
+                    drugsViewModel.updateName("")
+                    drugsViewModel.updateMeasure("")
                 },
                 modifier = Modifier
                     .padding(top = 30.dp, end = 8.dp)
@@ -56,7 +60,7 @@ fun buildDrugs(
         }
     }
 
-    val info = Repository().getDrugs()
+    val info = Repository.getDrugs()
     val currentNote = info.first
     val countLines = info.second.first
     val serviceIds = info.second.second
@@ -228,9 +232,9 @@ fun newDrugAdder(
                 Button(
                     onClick = {
                         if (!drugsViewModel.editingDrug()) {
-                            Repository().addDrug(drugsViewModel.name(), drugsViewModel.price(), drugsViewModel.measure())
+                            Repository.addDrug(drugsViewModel.name(), drugsViewModel.price(), drugsViewModel.measure())
                         } else {
-                            Repository().editDrug(drugsViewModel.name(), drugsViewModel.price(), drugsViewModel.measure(), drugsViewModel.id())
+                            Repository.editDrug(drugsViewModel.name(), drugsViewModel.price(), drugsViewModel.measure(), drugsViewModel.id())
                         }
                         drugsViewModel.updateAddingNewDrug(false)
                         drugsViewModel.updateEditingDrug(false)
@@ -244,6 +248,20 @@ fun newDrugAdder(
                     Text(if (!drugsViewModel.editingDrug()) "Добавить" else "Применить")
                 }
             }
+
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = Color.Red,
+                modifier = Modifier
+                    .clickable {
+                        Repository.deleteDrug(drugsViewModel.id())
+                        drugsViewModel.updateEditingDrug(false)
+                        drugsViewModel.updateAddingNewDrug(false)
+                    }
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+            )
         }
     }
 }

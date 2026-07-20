@@ -121,7 +121,7 @@ fun buildVaccine(
             .fillMaxSize()
     ) {
         val tempPair =
-            Repository().getVaccineJournal(vaccineState.searchText(), vaccineState.searchBy(), vaccineState.dateResult())
+            Repository.getVaccineJournal(vaccineState.searchText(), vaccineState.searchBy(), vaccineState.dateResult())
         val currentNote = tempPair.first
         val visitIds = tempPair.second.second
         val countLines = tempPair.second.first

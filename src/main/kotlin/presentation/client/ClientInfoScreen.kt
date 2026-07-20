@@ -131,7 +131,7 @@ fun buildClientInfo(
                 Button(
                     onClick = {
                         if (clientInfoViewModel.save()) {
-                            Repository().setClientInfo(
+                            Repository.setClientInfo(
                                 secondName = clientInfoViewModel.secondName(),
                                 firstName = clientInfoViewModel.firstName(),
                                 lastName = clientInfoViewModel.lastName(),
@@ -209,7 +209,7 @@ fun buildClientInfo(
                                     .clickable {
                                         CoroutineScope(Dispatchers.Default).launch {
                                             val info = withContext(Dispatchers.IO) {
-                                                Repository().getInfoByPetId(clientInfoViewModel.petIds()[row - 1] to clientInfoViewModel.addInfo()[row * 4 + 3])
+                                                Repository.getInfoByPetId(clientInfoViewModel.petIds()[row - 1] to clientInfoViewModel.addInfo()[row * 4 + 3])
                                             }
                                             illnessHistoryViewModel.updateVisit(info.first.second)
                                             illnessHistoryViewModel.updateNote(info.first.first)
@@ -374,7 +374,7 @@ fun newPetAdder(
             ) {
                 Button(
                     onClick = {
-                        Repository().addPetInfo(
+                        Repository.addPetInfo(
                             clientInfoViewModel.nickname(),
                             clientInfoViewModel.kind(),
                             clientInfoViewModel.breed(),
@@ -383,7 +383,7 @@ fun newPetAdder(
                             clientInfoViewModel.clientId()
                         )
                         clientInfoViewModel.updateAddingNewPet(false)
-                        val petId = Repository().getPetId(
+                        val petId = Repository.getPetId(
                             clientInfoViewModel.nickname(),
                             clientInfoViewModel.kind(),
                             clientInfoViewModel.breed(),

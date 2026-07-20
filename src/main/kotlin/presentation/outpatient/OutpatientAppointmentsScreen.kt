@@ -270,7 +270,7 @@ fun markup(
 
 
         val tempPair =
-            Repository().getOutpatientCard(
+            Repository.getOutpatientCard(
                 outpatientViewModel.searchText(),
                 outpatientViewModel.searchBy(),
                 outpatientViewModel.dateResult()
@@ -311,7 +311,7 @@ fun markup(
                                         CoroutineScope(Dispatchers.Default).launch {
                                             illnessHistoryViewModel.updateLoading(true)
                                             val info = withContext(Dispatchers.IO) {
-                                                Repository().getInfoByPetId(shareDataState.shareData())
+                                                Repository.getInfoByPetId(shareDataState.shareData())
                                             }
                                             illnessHistoryViewModel.updateVisit(info.first.second)
                                             illnessHistoryViewModel.updateNote(info.first.first)
@@ -321,7 +321,7 @@ fun markup(
                                             tabViewModel.updateNicknameTab(temp)
                                             illnessHistoryViewModel.updateIsPattern(true)
                                             illnessHistoryViewModel.updateIsNew(false)
-                                            val infoClient = Repository().getClientInfo(clientIds[row - 1])
+                                            val infoClient = Repository.getClientInfo(clientIds[row - 1])
                                             StateWrapper().fillClientInfoState(
                                                 clientInfoViewModel,
                                                 infoClient.first
@@ -332,7 +332,7 @@ fun markup(
                                         tabViewModel.updateActiveTab(Screen.OutpatientCardScreen.name)
                                         navController.navigate(Screen.OutpatientCardScreen.name)
                                     } else {
-                                        val info = Repository().getClientInfo(clientIds[row - 1])
+                                        val info = Repository.getClientInfo(clientIds[row - 1])
                                         StateWrapper().fillClientInfoState(
                                             clientInfoViewModel,
                                             info.first
