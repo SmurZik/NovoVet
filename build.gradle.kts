@@ -50,11 +50,11 @@ compose.desktop {
             includeAllModules = true
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "NovoVet"
-            packageVersion = "0.0.1"
+            packageVersion = "1.0.1"
             windows {
-                packageVersion = "0.0.1"
-                msiPackageVersion = "0.0.1"
-                exePackageVersion = "0.0.1"
+                packageVersion = "1.0.1"
+                msiPackageVersion = "1.0.1"
+                exePackageVersion = "1.0.1"
             }
         }
     }

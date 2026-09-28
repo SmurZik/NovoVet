@@ -709,8 +709,10 @@ object Repository {
                     val getPriceQuery = connection.prepareStatement(getPrice)
                     val result = getPriceQuery.executeQuery()
                     while (result.next()) {
+                        val drugPrice = result.getString(1)?.toIntOrNull() ?: 0
+                        val amount = amounts[index][secondIndex].toDoubleOrNull() ?: 0.0
 
-                        price += ceil(result.getString(1).toInt() * amounts[index][secondIndex].toDouble()).toInt()
+                        price += ceil(drugPrice * amount).toInt()
                     }
                 }
             }
