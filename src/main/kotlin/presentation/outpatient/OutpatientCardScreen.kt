@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.itextpdf.text.DocumentException
 import com.itextpdf.text.Font
+import com.itextpdf.text.Paragraph
 import com.itextpdf.text.Phrase
 import com.itextpdf.text.Rectangle
 import com.itextpdf.text.pdf.BaseFont
@@ -1292,32 +1293,29 @@ fun priceDialog(
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Выполнено в клинике:", font))
-                                val table = PdfPTable(3)
-                                table.totalWidth = 260f
-                                illnessHistoryViewModel.completedPair().second[0].forEachIndexed() { index, drugs ->
-                                    var newText: String
-                                    drugs.forEachIndexed { drugIndex, s ->
-                                        newText = if (drugIndex == 0) {
-                                            illnessHistoryViewModel.completedPair().first[index]
-                                        } else ""
-                                        val serviceCell = PdfPCell(Phrase(newText, font))
-                                        serviceCell.border = Rectangle.NO_BORDER
-                                        table.addCell(serviceCell)
-                                        val measure = Repository.getMeasure(s)
-                                        val drugCell = PdfPCell(Phrase(s, font))
-                                        drugCell.border = Rectangle.NO_BORDER
-                                        table.addCell(drugCell)
-                                        val amountCell = PdfPCell(
-                                            Phrase(
-                                                "${illnessHistoryViewModel.completedPair().second[1][index][drugIndex]} $measure",
-                                                font
-                                            )
-                                        )
-                                        amountCell.border = Rectangle.NO_BORDER
-                                        table.addCell(amountCell)
-                                    }
+                                val completed = illnessHistoryViewModel.completedPair()
+
+                                val services = completed.first
+                                val drugs = completed.second[0]
+                                val amounts = completed.second[1]
+
+                                drugs.forEachIndexed { index, drugList ->
+
+                                    val drugsText = drugList.mapIndexed { drugIndex, drugName ->
+                                        val amount = amounts[index][drugIndex]
+                                        val measure = Repository.getMeasure(drugName)
+
+                                        "$drugName — $amount $measure"
+                                    }.joinToString(", ")
+
+                                    val text = "Услуга: ${services[index]}. Препараты: $drugsText"
+
+                                    doc.add(
+                                        Paragraph(text, font).apply {
+                                            spacingAfter = 5f
+                                        }
+                                    )
                                 }
-                                doc.add(table)
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(
                                     com.itextpdf.text.Paragraph(
@@ -1515,32 +1513,29 @@ fun priceDialog(
                                 )
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(com.itextpdf.text.Paragraph("Выполнено в клинике:", font))
-                                val table = PdfPTable(3)
-                                table.totalWidth = 260f
-                                illnessHistoryViewModel.completedPair().second[0].forEachIndexed() { index, drugs ->
-                                    var newText: String
-                                    drugs.forEachIndexed { drugIndex, s ->
-                                        newText = if (drugIndex == 0) {
-                                            illnessHistoryViewModel.completedPair().first[index]
-                                        } else ""
-                                        val serviceCell = PdfPCell(Phrase(newText, font))
-                                        serviceCell.border = Rectangle.NO_BORDER
-                                        table.addCell(serviceCell)
-                                        val measure = Repository.getMeasure(s)
-                                        val drugCell = PdfPCell(Phrase(s, font))
-                                        drugCell.border = Rectangle.NO_BORDER
-                                        table.addCell(drugCell)
-                                        val amountCell = PdfPCell(
-                                            Phrase(
-                                                "${illnessHistoryViewModel.completedPair().second[1][index][drugIndex]} $measure",
-                                                font
-                                            )
-                                        )
-                                        amountCell.border = Rectangle.NO_BORDER
-                                        table.addCell(amountCell)
-                                    }
+                                val completed = illnessHistoryViewModel.completedPair()
+
+                                val services = completed.first
+                                val drugs = completed.second[0]
+                                val amounts = completed.second[1]
+
+                                drugs.forEachIndexed { index, drugList ->
+
+                                    val drugsText = drugList.mapIndexed { drugIndex, drugName ->
+                                        val amount = amounts[index][drugIndex]
+                                        val measure = Repository.getMeasure(drugName)
+
+                                        "$drugName — $amount $measure"
+                                    }.joinToString(", ")
+
+                                    val text = "Услуга: ${services[index]}. Препараты: $drugsText"
+
+                                    doc.add(
+                                        Paragraph(text, font).apply {
+                                            spacingAfter = 5f
+                                        }
+                                    )
                                 }
-                                doc.add(table)
                                 doc.add(com.itextpdf.text.Paragraph(" ", font))
                                 doc.add(
                                     com.itextpdf.text.Paragraph(
